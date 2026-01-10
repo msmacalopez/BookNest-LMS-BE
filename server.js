@@ -17,6 +17,24 @@ app.get("/", (req, res) => {
   res.send("Server is live!");
 });
 
+// Authentication Routes
+// app.use("/api/v1/auth", authRoute);
+
+//Admin Routes
+// app.use("/api/v1/admin", adminRoute);
+
+//Super Admin Routes
+// app.use("/api/v1/superadmin", superAdminRoute);
+
+//Book Routes
+// app.use("/api/v1/books", bookRoute);
+
+//Borrows Routes
+// app.use("/api/v1/borrows", borrowsRoute);
+
+//Review Routes
+// app.use("/api/v1/reviews", reviewRoute);
+
 // error validator
 app.use((error, req, res, next) => {
   console.log("Error Validator:", error);

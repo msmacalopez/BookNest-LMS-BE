@@ -1,7 +1,7 @@
 {
   "name": "booknest-lms-be",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -9,9 +9,9 @@
     "dev": "nodemon server.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Maca and Sanjil",
   "license": "ISC",
-  "description": "",
+  "description": "API for BookNest Library Management System",
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
