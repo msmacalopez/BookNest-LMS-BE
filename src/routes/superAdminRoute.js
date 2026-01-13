@@ -63,7 +63,7 @@ router.patch(
 
 //pdowngrade librarian to member
 router.patch(
-  "/upgrade-librarian/:librarianId",
+  "/down-librarian/:librarianId",
   auth,
   isAdmin,
   isSuperAdmin,

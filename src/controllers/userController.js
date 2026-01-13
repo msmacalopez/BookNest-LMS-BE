@@ -34,12 +34,12 @@ export const createNewMemberController = async (req, res, next) => {
 export const getMyDetailsController = async (req, res, next) => {
   try {
     // req.userInfo is set in auth middleware
-    const userId = req.userInfo._id;
+    // const userId = req.userInfo._id;
 
     //details already from auth middleware:
     const userDetails = req.userInfo;
     // const userDetails = await getUserByIdModel(userId);
-
+    console.log(userDetails);
     //send data to frontend
     res.status(200).json({
       status: "success",
@@ -189,7 +189,7 @@ export const getLibrarianByIdController = async (req, res, next) => {
     const { id } = req.params;
     const librarianFound = await getAllUsersModel({
       _id: id,
-      role: "librarian",
+      role: "admin",
     });
 
     // if librarian is not found
@@ -213,7 +213,7 @@ export const getLibrarianByIdController = async (req, res, next) => {
 // Get all librarians (filter by role=librarian)
 export const getAllLibrariansController = async (req, res, next) => {
   try {
-    const librarians = await getAllUsersModel({ role: "librarian" });
+    const librarians = await getAllUsersModel({ role: "admin" });
 
     res.status(200).json({
       status: "success",
@@ -228,9 +228,11 @@ export const getAllLibrariansController = async (req, res, next) => {
 // Create librarian????????? password???
 export const createLibrarianController = async (req, res, next) => {
   try {
+    const hashedPassword = hashPassword(req.body.password);
     // create librarian
     const librarianObj = {
       ...req.body,
+      password: hashedPassword,
       role: "admin",
     };
     const newLibrarian = await createUserModel(librarianObj);
@@ -252,7 +254,7 @@ export const deleteLibrarianController = async (req, res, next) => {
     const { librarianId } = req.params;
     const librarian = await deleteUserModel({
       _id: librarianId,
-      role: "librarian",
+      role: "admin",
     });
 
     // if librarian to delete is not found
@@ -262,6 +264,15 @@ export const deleteLibrarianController = async (req, res, next) => {
         message: "Librarian not found or already deleted",
       });
     }
+    return res.status(200).json({
+      status: "success",
+      message: "Librarian deleted successfully",
+      data: {
+        _id: librarian._id,
+        email: librarian.email,
+        name: librarian.lName,
+      },
+    });
   } catch (error) {
     next(error);
   }
@@ -278,7 +289,7 @@ export const updateLibrarianInfoController = async (req, res, next) => {
 
     // update librarian in DB
     const updatedLibrarian = await updateUserModel(
-      { _id: librarianId, role: "librarian" },
+      { _id: librarianId, role: "admin" },
       updatedData
     );
 
@@ -302,13 +313,22 @@ export const updateLibrarianInfoController = async (req, res, next) => {
 // Update Librarian by id: only change role
 export const upgradeUserToLibrarianController = async (req, res, next) => {
   const userId = req.params.librarianId;
-  const newRole = "librarian";
-  const userUpgraded = await getAllUsersModel({ _id: userId, role: newRole });
+  const updatedUser = await updateUserModel(
+    { _id: userId, role: "member" }, // only upgrade members
+    { role: "admin" }
+  );
+
+  if (!updatedUser) {
+    return res.status(404).json({
+      status: "error",
+      message: "User not found or not a member",
+    });
+  }
 
   res.status(200).json({
     status: "success",
     message: "User upgraded to librarian successfully",
-    data: userUpgraded,
+    data: updatedUser,
   });
   try {
   } catch (error) {
@@ -319,13 +339,22 @@ export const upgradeUserToLibrarianController = async (req, res, next) => {
 // Downgrade Librarian by id: only change role
 export const downToMemberController = async (req, res, next) => {
   const userId = req.params.librarianId;
-  const newRole = "member";
-  const userDown = await getAllUsersModel({ _id: userId, role: newRole });
+  const updatedUser = await updateUserModel(
+    { _id: userId, role: "admin" }, // only downgrade admins
+    { role: "member" }
+  );
+
+  if (!updatedUser) {
+    return res.status(404).json({
+      status: "error",
+      message: "User not found or not an admin",
+    });
+  }
 
   res.status(200).json({
     status: "success",
     message: "User is now a member",
-    data: userDown,
+    data: updatedUser,
   });
   try {
   } catch (error) {

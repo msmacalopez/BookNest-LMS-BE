@@ -1,0 +1,125 @@
+@rootURL = http://localhost:3000
+@apiEP = {{rootURL}}/api/v1
+
+@authEP = {{apiEP}}/auth
+@memberEP = {{apiEP}}/member
+@adminEP = {{apiEP}}/admin
+@superadminEP = {{apiEP}}/superadmin
+@bookEP = {{apiEP}}/books
+@borrowsEP = {{apiEP}}/borrows
+@reviewsEP = {{apiEP}}/reviews
+
+@sessionJWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAYS5jb20iLCJpYXQiOjE3NjgzMjQzMDYsImV4cCI6MTc2ODQxMDcwNn0.N-KDLdoxekmZnyqxo4paDT6ppkvjJdQdhWRnSXfPFVg
+@renewJWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAYS5jb20iLCJpYXQiOjE3NjgzMjQzMDYsImV4cCI6MTc3MDkxNjMwNn0.AwrognO5Dof4IyntG1zO5pMRFIBPx7sRgdWSB4IziAE
+############################# AUTH
+### login
+POST {{authEP}}/login
+Content-Type: application/json
+
+{
+    "email":"lib2@a.com",
+    "password":"123"
+}
+
+### renew-jwt
+GET {{authEP}}/renew-jwt
+Authorization: {{renewJWT}}
+
+############################## Member Route
+### Create User
+POST {{memberEP}}/register
+Content-Type: application/json
+
+{
+    "email":"test@a.com",
+    "password":"123",
+    "phone":"0458383",
+    "fName":"testName",
+    "lName":"testLastname"
+}
+
+### Get my details
+GET {{memberEP}}/mydetails
+Authorization: {{sessionJWT}}
+
+### Update my details -> including password
+PATCH {{memberEP}}/update-mydetails
+Authorization: {{sessionJWT}}
+Content-Type: application/json
+
+{
+    "email":"test@a2.com",
+    "password":"1234",
+    "phone":"04583832",
+    "fName":"testName2",
+    "lName":"testLastname2"
+}
+
+### Delete My account
+DELETE {{memberEP}}/delete-account
+Authorization: {{sessionJWT}}
+
+################################# ADMIN-LIBRARIAN
+### Get all Members
+GET {{adminEP}}/users
+Authorization: {{sessionJWT}}
+
+### get a Member by id
+GET {{adminEP}}/users/69666f3cb28c865ad784184a
+Authorization: {{sessionJWT}}
+
+### Change details of a Member (id params)
+##Even you add password, it wont change it
+PATCH {{adminEP}}/update-user/69666f3cb28c865ad784184a
+Authorization: {{sessionJWT}}
+
+{
+ "email":"test@a2.com",
+    "phone":"04583832",
+    "fName":"testName2",
+    "lName":"testLastname2",
+    "password":"123"
+}
+
+################################ SUPERADMIN
+### get al librarians
+GET {{superadminEP}}/librarians
+Authorization: {{sessionJWT}}
+
+### Create Librarian including password
+POST {{superadminEP}}/create-librarian
+Authorization: {{sessionJWT}}
+Content-Type: application/json
+
+{
+     "email":"lib1@a.com",
+    "phone":"04583",
+    "fName":"testName",
+    "lName":"testLastname",
+    "password":"123"
+}
+### Delete librarian use id
+DELETE {{superadminEP}}/delete-librarian/6966821bc6397eb3dbee9a94
+Authorization: {{sessionJWT}}
+
+### Update librarian (not password allowed)
+PATCH  {{superadminEP}}/update-librarian/6966840355276d0874e1df0b
+Authorization: {{sessionJWT}}
+Content-Type: application/json
+
+{
+     "email":"lib2@a.com",
+    "phone":"04583",
+    "fName":"testName",
+    "lName":"testLastname",
+    "password":"1234"
+}
+
+### Upgrade Member to LIBRARIAN
+PATCH  {{superadminEP}}/upgrade-librarian/6966840355276d0874e1df0b
+Authorization: {{sessionJWT}}
+
+
+### Downgrade librarian to MEMBER
+PATCH  {{superadminEP}}/down-librarian/6966840355276d0874e1df0b
+Authorization: {{sessionJWT}}

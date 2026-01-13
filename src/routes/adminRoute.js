@@ -13,7 +13,7 @@ const router = express.Router();
 router.get("/users", auth, isAdmin, getAllMembersController);
 //-> add authMiddleware, isAdminMiddleware
 
-router.get("/user/:id", auth, isAdmin, getMemberByIdController);
+router.get("/users/:id", auth, isAdmin, getMemberByIdController);
 // -> add authMiddleware, isAdminMiddleware
 
 // router.post("/create-user", auth, isAdmin, createUserController);

@@ -11,24 +11,38 @@ export const auth = async (req, res, next) => {
 
     const { authorization } = req.headers;
 
+    if (!authorization) {
+      return next({
+        message: "No authorization header provided",
+        status: 401,
+      });
+    }
+
     const decoded = verifyAccessToken(authorization);
 
-    if (decoded?.email) {
-      const tokenObj = authorization;
-
-      const user = await getUserByEmailModel(decoded.email);
-
-      // not even keep the hashed-password in req object
-      user.password = "";
-      user.userInfo = user;
-      return next();
-    } else {
-      const error = {
-        message: "Invalid Token" + decoded,
-        status: 401, //not authenticated
-      };
-      return next(error);
+    if (!decoded?.email) {
+      return next({
+        message: "Invalid token payload",
+        status: 401,
+      });
     }
+
+    const user = await getUserByEmailModel(decoded.email);
+
+    if (!user) {
+      return next({
+        message: "User not found for this token",
+        status: 401,
+      });
+    }
+
+    // don't expose hashed password
+    user.password = "";
+
+    // set req.userInfo
+    req.userInfo = user;
+
+    return next();
   } catch (error) {
     next(error);
   }
@@ -75,7 +89,7 @@ export const renewAuth = async (req, res, next) => {
 };
 
 export const isAdmin = (req, res, next) => {
-  req.userInfo.role === "admin"
+  req.userInfo.role === "admin" || req.userInfo.role === "superadmin"
     ? next()
     : next({
         status: 403,
