@@ -3,10 +3,6 @@ import { createNewUserController } from "../controllers/authController.js";
 
 const router = express.Router();
 
-// api/v1/auth/register
-router.post("/register", createNewUserController);
-//-> add newUserValidator (Joi)
-
 // api/v1/auth/login
 router.post("/login", loginUserController);
 //-> add loginUserValidator (Joi)
@@ -18,12 +14,5 @@ router.post("/logout", logoutUserController);
 // api/v1/auth/renew-jwt
 router.get("/renew-jwt", renewTokenController);
 //-> add authMiddleware
-
-// api/v1/auth/user
-router.get("/mydetails", getMyDetailsController);
-//-> add authMiddleware
-
-router.patch("/update-mydetails", updateMyDetailsController);
-//-> add authMiddleware + updateMyDetailsValidator (Joi)
 
 export default router;

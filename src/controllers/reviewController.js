@@ -13,6 +13,7 @@ export const getReviewsByUserController = (req, res) => {
   } catch (error) {}
 };
 
+//can filter reviews by borrowID, etc
 export const getAllReviewsController = (req, res) => {
   try {
   } catch (error) {}

@@ -20,6 +20,9 @@ app.get("/", (req, res) => {
 // Authentication Routes
 // app.use("/api/v1/auth", authRoute);
 
+//Member Routes
+// app.use("/api/v1/member", memberRoute);
+
 //Admin Routes
 // app.use("/api/v1/admin", adminRoute);
 
