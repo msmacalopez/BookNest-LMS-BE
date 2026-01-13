@@ -1,3 +1,4 @@
+import { hashPassword } from "../utils/bcrypt.js";
 import {
   getAllUsersModel,
   getUserByIdModel,
@@ -5,6 +6,7 @@ import {
   deleteUserModel,
   updateUserModel,
 } from "../models/User/UserModel.js";
+import { hashPassword } from "../utils/bcrypt.js";
 
 /////////////////////////// Member functions controller - MEMBER
 // create new user (member)
@@ -12,7 +14,13 @@ export const createNewMemberController = async (req, res, next) => {
   try {
     // create member
     const userObj = { ...req.body, role: "member" };
+
+    // hash password before saving to DB
+    userObj.password = hashPassword(req.body.password);
+
+    // save to DB
     const newUser = await createUserModel(userObj);
+
     res.status(201).json({
       status: "success",
       message: "User created successfully",

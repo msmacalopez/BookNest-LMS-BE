@@ -6,8 +6,15 @@ import { createAccessToken, createRenewToken } from "../utils/jwt.js";
 
 export const loginUserController = async (req, res, next) => {
   try {
+    //1. usuario existe? use email
+    //2. if exist, then compare passwords
+    //3. if password match, generate access token and renew token
+    //4. send tokens to front end
+
     //get email from request body
     const { email, password } = req.body;
+
+    // user found includes the hashed-password
     const user = await getUserByEmailModel(email);
 
     if (user) {
@@ -21,7 +28,7 @@ export const loginUserController = async (req, res, next) => {
         // generate Renew Token
         const renewToken = createRenewToken(payload);
 
-        //send response
+        //send response to front end
         return res.json({
           status: "success",
           message: "User Authenticated",
@@ -54,12 +61,16 @@ export const logoutUserController = (req, res, next) => {
 
 export const renewTokenController = (req, res, next) => {
   try {
+    //1. Get the email from userInfo, this comes from the authentication middleware (renewAuth)
+    //2. because the renewToken is still valid (yes cause before we generate userInfo with that) then generate new access token
+    //3. send tokens to front end
     const payload = { email: req.userInfo.email };
 
     //generate Access Token
     const accessToken = createAccessToken(payload);
+    // only create accessJWT, does not create refreshJWT -> when this expire, user needs to login again
 
-    // send response
+    // send response to front end
     return res.json({
       status: "success",
       message: "Token Renewed",
@@ -73,10 +84,10 @@ export const renewTokenController = (req, res, next) => {
 };
 
 // EXAMPLE
-// req.user = {
+// req.userInfo = {
 //   _id: "f91a23f1...",
 //   email: "test@gmail.com",
 //   role: "admin",
-//   iat: 1736765432,
-//   exp: 1736851832,
+//   password: "",
+//   phone: "1234567890",
 // };
