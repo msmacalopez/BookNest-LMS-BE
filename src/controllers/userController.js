@@ -6,7 +6,6 @@ import {
   deleteUserModel,
   updateUserModel,
 } from "../models/User/UserModel.js";
-import { hashPassword } from "../utils/bcrypt.js";
 
 /////////////////////////// Member functions controller - MEMBER
 // create new user (member)
@@ -31,50 +30,156 @@ export const createNewMemberController = async (req, res, next) => {
   }
 };
 
-//get details fo user by id (from token)
+//get details of user by id (from token)
 export const getMyDetailsController = async (req, res, next) => {
   try {
-    // req.user is set in auth middleware
-    const userId = req.user._id;
-    const userDetails = await getUserByIdModel(userId);
+    // req.userInfo is set in auth middleware
+    const userId = req.userInfo._id;
+
+    //details already from auth middleware:
+    const userDetails = req.userInfo;
+    // const userDetails = await getUserByIdModel(userId);
+
+    //send data to frontend
     res.status(200).json({
       status: "success",
       message: "User details found successfully",
-      data: userDetails,
+      user: userDetails,
     });
   } catch (error) {
     next(error);
   }
 };
 
-export const updateMyDetailsController = (req, res) => {
+export const updateMyDetailsController = async (req, res, next) => {
   try {
-  } catch (error) {}
+    // req.userInfo is set in auth middleware
+    const userId = req.userInfo._id;
+    const updatedObj = { ...req.body };
+    updatedObj.role = req.userInfo.role; // prevent role update
+
+    // if password is to be updated, hash it
+    if (updatedObj?.password) {
+      updatedObj.password = hashPassword(updatedObj.password);
+    }
+    const updatedUser = await updateUserModel({ _id: userId }, updatedObj);
+
+    // respond to frontend
+    return res.status(200).json({
+      status: "success",
+      message: "Your details have been updated",
+      data: updatedUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteMyAccountController = async (req, res, next) => {
+  try {
+    const userId = req.userInfo._id; // comes from auth middleware
+
+    const deletedUser = await deleteUserModel({ _id: userId });
+
+    if (!deletedUser) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found",
+      });
+    }
+
+    // if deletion is successful
+    return res.status(200).json({
+      status: "success",
+      message: "Your account has been deleted successfully",
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 //////////////// Controller functions for admin - ADMIN / LIBRARIAN
 
-export const getAllUsersController = (req, res) => {
+export const getAllMembersController = async (req, res, next) => {
   try {
-  } catch (error) {}
+    // find all users where role === "member" and exclude password
+    const members = await getAllUsersModel({ role: "member" });
+
+    return res.status(200).json({
+      status: "success",
+      message: "Members retrieved successfully",
+      data: members,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
-export const getUserByIdController = (req, res) => {
+export const getMemberByIdController = async (req, res, next) => {
   try {
-  } catch (error) {}
-};
+    const { id } = req.params;
 
-// can create only members
-export const createUserController = (req, res) => {
-  try {
-  } catch (error) {}
+    // find member with matching id
+    const members = await getAllUsersModel({ _id: id, role: "member" });
+
+    // getAllUsersModel returns an array, so check length or first element
+    const member = members[0];
+
+    if (!member) {
+      return res.status(404).json({
+        status: "error",
+        message: "Member not found",
+      });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      message: "Member found successfully",
+      data: member,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 // can update (make a member active/inactive)
-export const updateUserController = (req, res) => {
+export const updateMemberController = async (req, res, next) => {
   try {
-  } catch (error) {}
+    const { id } = req.params;
+
+    // Clone data to safely modify
+    const updatedData = { ...req.body };
+    // Do not allow password updates
+    delete updatedData.password;
+
+    // Update only members
+    const updatedMember = await updateUserModel(
+      { _id: id, role: "member" },
+      updatedData
+    );
+
+    if (!updatedMember) {
+      return res.status(404).json({
+        status: "error",
+        message: "Member not found",
+      });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      message: "Member updated successfully",
+      data: updatedMember,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
+
+// can create only members????? how to set password
+// export const createUserController = (req, res) => {
+//   try {
+//   } catch (error) {}
+// };
 
 ////////////////// Controller functions - SUPER ADMIN
 
@@ -144,8 +249,11 @@ export const createLibrarianController = async (req, res, next) => {
 export const deleteLibrarianController = async (req, res, next) => {
   try {
     // get librarian id from req.params
-    const { id } = req.params;
-    const librarian = await deleteUserModel({ _id: id, role: "librarian" });
+    const { librarianId } = req.params;
+    const librarian = await deleteUserModel({
+      _id: librarianId,
+      role: "librarian",
+    });
 
     // if librarian to delete is not found
     if (!librarian) {
@@ -162,7 +270,7 @@ export const deleteLibrarianController = async (req, res, next) => {
 // Update librarian (filter by id): change info but role and password
 export const updateLibrarianInfoController = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { librarianId } = req.params;
 
     //remove password if present
     const updatedData = { ...req.body };
@@ -170,9 +278,16 @@ export const updateLibrarianInfoController = async (req, res, next) => {
 
     // update librarian in DB
     const updatedLibrarian = await updateUserModel(
-      { _id: id, role: "librarian" },
+      { _id: librarianId, role: "librarian" },
       updatedData
     );
+
+    if (!updatedLibrarian) {
+      return res.status(404).json({
+        status: "error",
+        message: "Librarian not found",
+      });
+    }
 
     res.status(200).json({
       status: "success",
@@ -186,7 +301,7 @@ export const updateLibrarianInfoController = async (req, res, next) => {
 
 // Update Librarian by id: only change role
 export const upgradeUserToLibrarianController = async (req, res, next) => {
-  const userId = req.params.id;
+  const userId = req.params.librarianId;
   const newRole = "librarian";
   const userUpgraded = await getAllUsersModel({ _id: userId, role: newRole });
 
@@ -194,6 +309,23 @@ export const upgradeUserToLibrarianController = async (req, res, next) => {
     status: "success",
     message: "User upgraded to librarian successfully",
     data: userUpgraded,
+  });
+  try {
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Downgrade Librarian by id: only change role
+export const downToMemberController = async (req, res, next) => {
+  const userId = req.params.librarianId;
+  const newRole = "member";
+  const userDown = await getAllUsersModel({ _id: userId, role: newRole });
+
+  res.status(200).json({
+    status: "success",
+    message: "User is now a member",
+    data: userDown,
   });
   try {
   } catch (error) {

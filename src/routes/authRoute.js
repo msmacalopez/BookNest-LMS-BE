@@ -1,5 +1,12 @@
 import express from "express";
-import { createNewUserController } from "../controllers/authController.js";
+
+//controllers
+import {
+  loginUserController,
+  renewTokenController,
+} from "../controllers/authController.js";
+//auth middlewares
+import { renewAuth } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
@@ -8,11 +15,11 @@ router.post("/login", loginUserController);
 //-> add loginUserValidator (Joi)
 
 // api/v1/auth/logout
-router.post("/logout", logoutUserController);
+// router.post("/logout", logoutUserController);
 //-> add authMiddleware
 
 // api/v1/auth/renew-jwt
-router.get("/renew-jwt", renewTokenController);
+router.get("/renew-jwt", renewAuth, renewTokenController);
 //-> add authMiddleware
 
 export default router;

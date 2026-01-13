@@ -1,17 +1,25 @@
 import express from "express";
+// controllers
+import {
+  getAllMembersController,
+  getMemberByIdController,
+  updateMemberController,
+} from "../controllers/userController.js";
+// auth middlewares
+import { auth, isAdmin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/users", getAllUsersController);
+router.get("/users", auth, isAdmin, getAllMembersController);
 //-> add authMiddleware, isAdminMiddleware
 
-router.get("/user/:id", getUserByIdController);
+router.get("/user/:id", auth, isAdmin, getMemberByIdController);
 // -> add authMiddleware, isAdminMiddleware
 
-router.post("/create-user", createUserController);
+// router.post("/create-user", auth, isAdmin, createUserController);
 //-> add authMiddleware, isAdminMiddleware, createUserValidator (Joi)
 
-router.patch("/update-user/:id", updateUserController);
+router.patch("/update-user/:id", auth, isAdmin, updateMemberController);
 //-> add authMiddleware, isAdminMiddleware, updateUserValidator (Joi)
 
 export default router;

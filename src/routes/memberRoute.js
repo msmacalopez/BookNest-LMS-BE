@@ -1,17 +1,29 @@
 import express from "express";
+//controllers
+import {
+  createNewMemberController,
+  deleteMyAccountController,
+  getMyDetailsController,
+  updateMyDetailsController,
+} from "../controllers/userController.js";
+//auth middlewares
+import { auth } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
 // api/v1/member/register
-router.post("/register", createNewUserController);
+router.post("/register", createNewMemberController);
 //-> add newUserValidator (Joi)
 
 // api/v1/member/user
-router.get("/mydetails", getMyDetailsController);
+router.get("/mydetails", auth, getMyDetailsController);
 //-> add authMiddleware
 
 // api/v1/member/update-mydetails
-router.patch("/update-mydetails", updateMyDetailsController);
+router.patch("/update-mydetails", auth, updateMyDetailsController);
 //-> add authMiddleware + updateMyDetailsValidator (Joi)
+
+router.delete("/delete-account", auth, deleteMyAccountController);
+//-> add authMiddleware
 
 export default router;

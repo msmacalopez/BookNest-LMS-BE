@@ -3,6 +3,12 @@ import cors from "cors";
 import { connectMongoDB } from "./src/config/mongoDB.js";
 import config from "./src/config/config.js";
 
+// Importing Routes
+import authRoute from "./src/routes/authRoute.js";
+import memberRoute from "./src/routes/memberRoute.js";
+import adminRoute from "./src/routes/adminRoute.js";
+import superAdminRoute from "./src/routes/superAdminRoute.js";
+
 // Create an Express application - server instance
 const app = express();
 const PORT = config.port;
@@ -18,16 +24,16 @@ app.get("/", (req, res) => {
 });
 
 // Authentication Routes
-// app.use("/api/v1/auth", authRoute);
+app.use("/api/v1/auth", authRoute);
 
 //Member Routes
-// app.use("/api/v1/member", memberRoute);
+app.use("/api/v1/member", memberRoute);
 
 //Admin Routes
-// app.use("/api/v1/admin", adminRoute);
+app.use("/api/v1/admin", adminRoute);
 
 //Super Admin Routes
-// app.use("/api/v1/superadmin", superAdminRoute);
+app.use("/api/v1/superadmin", superAdminRoute);
 
 //Book Routes
 // app.use("/api/v1/books", bookRoute);
