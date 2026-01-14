@@ -11,7 +11,12 @@ import {
 } from "../controllers/userController.js";
 
 //auth middlewares
-import { auth, isAdmin, isSuperAdmin } from "../middlewares/authMiddleware.js";
+import {
+  auth,
+  isActiveUser,
+  isAdmin,
+  isSuperAdmin,
+} from "../middlewares/authMiddleware.js";
 // joi middlewares
 import {
   downToMemberValidation,
@@ -27,16 +32,18 @@ router.get(
   auth,
   isAdmin,
   isSuperAdmin,
+  isActiveUser,
   getAllLibrariansController
 );
 //-> add authMiddleware, isAdminMiddleware, isSuperAdminMiddleware
 
 router.post(
   "/create-librarian",
+  newAdminValidation,
   auth,
   isAdmin,
   isSuperAdmin,
-  newAdminValidation,
+  isActiveUser,
   createLibrarianController
 );
 //-> add authMiddleware, isAdminMiddleware, isSuperAdminMiddleware, createLibrarianValidator (Joi)
@@ -46,16 +53,18 @@ router.delete(
   auth,
   isAdmin,
   isSuperAdmin,
+  isActiveUser,
   deleteLibrarianController
 );
 //-> add authMiddleware, isAdminMiddleware, isSuperAdminMiddleware
 
 router.patch(
   "/update-librarian/:librarianId",
+  updateLibrarianValidation,
   auth,
   isAdmin,
   isSuperAdmin,
-  updateLibrarianValidation,
+  isActiveUser,
   updateLibrarianInfoController
 );
 //-> add authMiddleware, isAdminMiddleware, isSuperAdminMiddleware, updateLibrarianValidator (Joi)
@@ -63,10 +72,11 @@ router.patch(
 //promote member to librarian
 router.patch(
   "/upgrade-librarian/:librarianId",
+  promoteToLibrarianValidation,
   auth,
   isAdmin,
   isSuperAdmin,
-  promoteToLibrarianValidation,
+  isActiveUser,
   upgradeUserToLibrarianController
 );
 //-> add authMiddleware, isAdminMiddleware, isSuperAdminMiddleware, updateLibrarianValidator (Joi)
@@ -74,10 +84,11 @@ router.patch(
 //pdowngrade librarian to member
 router.patch(
   "/down-librarian/:librarianId",
+  downToMemberValidation,
   auth,
   isAdmin,
   isSuperAdmin,
-  downToMemberValidation,
+  isActiveUser,
   downToMemberController
 );
 //-> add authMiddleware, isAdminMiddleware, isSuperAdminMiddleware, updateLibrarianValidator (Joi)

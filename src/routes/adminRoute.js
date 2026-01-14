@@ -6,16 +6,16 @@ import {
   updateMemberController,
 } from "../controllers/userController.js";
 // auth middlewares
-import { auth, isAdmin } from "../middlewares/authMiddleware.js";
+import { auth, isActiveUser, isAdmin } from "../middlewares/authMiddleware.js";
 //joi middlewares
 import { updateMemberByAdminValidation } from "../middlewares/joiValidation.js";
 
 const router = express.Router();
 
-router.get("/users", auth, isAdmin, getAllMembersController);
+router.get("/users", auth, isAdmin, isActiveUser, getAllMembersController);
 //-> add authMiddleware, isAdminMiddleware
 
-router.get("/users/:id", auth, isAdmin, getMemberByIdController);
+router.get("/users/:id", auth, isAdmin, isActiveUser, getMemberByIdController);
 // -> add authMiddleware, isAdminMiddleware
 
 // router.post("/create-user", auth, isAdmin, createUserController);
@@ -23,9 +23,10 @@ router.get("/users/:id", auth, isAdmin, getMemberByIdController);
 
 router.patch(
   "/update-user/:id",
-  auth,
   updateMemberByAdminValidation,
+  auth,
   isAdmin,
+  isActiveUser,
   updateMemberController
 );
 //-> add authMiddleware, isAdminMiddleware, updateUserValidator (Joi)

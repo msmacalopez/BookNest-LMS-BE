@@ -7,7 +7,7 @@ import {
   updateMyDetailsController,
 } from "../controllers/userController.js";
 //auth middlewares
-import { auth } from "../middlewares/authMiddleware.js";
+import { auth, isActiveUser } from "../middlewares/authMiddleware.js";
 //joi middlewares
 import {
   newMemberValidation,
@@ -27,13 +27,14 @@ router.get("/mydetails", auth, getMyDetailsController);
 // api/v1/member/update-mydetails
 router.patch(
   "/update-mydetails",
-  auth,
   updateMyMemberValidation,
+  auth,
+  isActiveUser,
   updateMyDetailsController
 );
 //-> add authMiddleware + updateMyDetailsValidator (Joi)
 
-router.delete("/delete-account", auth, deleteMyAccountController);
+router.delete("/delete-account", auth, isActiveUser, deleteMyAccountController);
 //-> add authMiddleware
 
 export default router;

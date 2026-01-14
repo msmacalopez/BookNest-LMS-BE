@@ -48,6 +48,26 @@ export const auth = async (req, res, next) => {
   }
 };
 
+export const isActiveUser = (req, res, next) => {
+  const user = req.userInfo;
+
+  if (!user) {
+    return next({
+      status: 401,
+      message: "Unauthorized: no user recognised",
+    });
+  }
+
+  if (user.status !== "active") {
+    return next({
+      status: 403,
+      message: "Your account is not active. Please contact support or admin.",
+    });
+  }
+
+  next();
+};
+
 export const renewAuth = async (req, res, next) => {
   try {
     //     1. receive jwt via authorization header
