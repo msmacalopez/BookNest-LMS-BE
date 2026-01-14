@@ -12,6 +12,13 @@ import {
 
 //auth middlewares
 import { auth, isAdmin, isSuperAdmin } from "../middlewares/authMiddleware.js";
+// joi middlewares
+import {
+  downToMemberValidation,
+  newAdminValidation,
+  promoteToLibrarianValidation,
+  updateLibrarianValidation,
+} from "../middlewares/joiValidation.js";
 
 const router = express.Router();
 
@@ -29,6 +36,7 @@ router.post(
   auth,
   isAdmin,
   isSuperAdmin,
+  newAdminValidation,
   createLibrarianController
 );
 //-> add authMiddleware, isAdminMiddleware, isSuperAdminMiddleware, createLibrarianValidator (Joi)
@@ -47,6 +55,7 @@ router.patch(
   auth,
   isAdmin,
   isSuperAdmin,
+  updateLibrarianValidation,
   updateLibrarianInfoController
 );
 //-> add authMiddleware, isAdminMiddleware, isSuperAdminMiddleware, updateLibrarianValidator (Joi)
@@ -57,6 +66,7 @@ router.patch(
   auth,
   isAdmin,
   isSuperAdmin,
+  promoteToLibrarianValidation,
   upgradeUserToLibrarianController
 );
 //-> add authMiddleware, isAdminMiddleware, isSuperAdminMiddleware, updateLibrarianValidator (Joi)
@@ -67,6 +77,7 @@ router.patch(
   auth,
   isAdmin,
   isSuperAdmin,
+  downToMemberValidation,
   downToMemberController
 );
 //-> add authMiddleware, isAdminMiddleware, isSuperAdminMiddleware, updateLibrarianValidator (Joi)

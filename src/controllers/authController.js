@@ -54,10 +54,10 @@ export const loginUserController = async (req, res, next) => {
   }
 };
 
-export const logoutUserController = (req, res, next) => {
-  try {
-  } catch (error) {}
-};
+// export const logoutUserController = (req, res, next) => {
+//   try {
+//   } catch (error) {}
+// };
 
 export const renewTokenController = (req, res, next) => {
   try {

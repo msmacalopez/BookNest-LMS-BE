@@ -7,6 +7,11 @@ const userSchema = new mongoose.Schema(
       enum: ["superadmin", "admin", "member"],
       default: "member",
     },
+    status: {
+      type: String,
+      enum: ["active", "inactive", "suspended", "deactivated"],
+      default: "active",
+    },
     fName: {
       type: String,
       required: true,

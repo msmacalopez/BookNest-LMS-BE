@@ -7,11 +7,13 @@ import {
 } from "../controllers/authController.js";
 //auth middlewares
 import { renewAuth } from "../middlewares/authMiddleware.js";
+//joi middlewares
+import { loginValidation } from "../middlewares/joiValidation.js";
 
 const router = express.Router();
 
 // api/v1/auth/login
-router.post("/login", loginUserController);
+router.post("/login", loginValidation, loginUserController);
 //-> add loginUserValidator (Joi)
 
 // api/v1/auth/logout
