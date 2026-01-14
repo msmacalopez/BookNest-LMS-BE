@@ -1,15 +1,23 @@
 import express from "express";
+import {
+  createReviewController,
+  getAllReviewsController,
+  getMyReviewsController,
+  getReviewsByBookController,
+  updateReviewController,
+} from "../controllers/reviewController.js";
 
 const router = express.Router();
+
+// Get active reviews for a book (public)
+router.get("/book/:bookId", getReviewsByBookController);
 
 router.post("/:borrowId", createReviewController);
 // -> add authMiddleware, createReviewValidator (Joi)
 
-router.get("/book/:bookId", getReviewsByBookController);
-// -> add authMiddleware??? anyone can see reviews?
-
-router.get("/user/:userId", getReviewsByUserController);
-// -> add authMiddleware, isAdminMiddleware
+//active reviews
+router.get("/myreviews", getMyReviewsController);
+// -> add authMiddleware
 
 router.get("/allreviews", getAllReviewsController);
 // -> add authMiddleware, isAdminMiddleware

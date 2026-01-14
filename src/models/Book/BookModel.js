@@ -6,9 +6,9 @@ export const addBookModel = (obj) => {
 };
 
 // read all public books (any)
-export const getAllPublicBooksModel = (filter, limit, skip, sort) => {
-  return BookSchema.find(filter).limit(limit).skip(skip).sort(sort);
-};
+// export const getAllPublicBooksModel = (filter, limit, skip, sort) => {
+//   return BookSchema.find(filter).limit(limit).skip(skip).sort(sort);
+// };
 // export const getAllBooks = (filter) => {
 //   return BookSchema.find(filter);
 // };
@@ -31,4 +31,34 @@ export const updateBookModel = (id, updatedObj) => {
 // delete book by id
 export const deleteBookModel = (id) => {
   return BookSchema.findByIdAndDelete(id);
+};
+
+//////Increase-decrease availability
+// Decrement the availableBooks and return BookObject
+export const reserveBookCopyModel = (bookId) => {
+  return BookSchema.findOneAndUpdate(
+    {
+      _id: bookId,
+      quantityAvailable: { $gt: 0 }, //not negatives
+    },
+    {
+      $inc: { quantityAvailable: -1 },
+    },
+    {
+      new: true,
+    }
+  );
+};
+
+// Increment availability and return BookObject
+export const releaseBookCopyModel = (bookId) => {
+  return BookSchema.findByIdAndUpdate(
+    bookId,
+    {
+      $inc: { quantityAvailable: 1 },
+    },
+    {
+      new: true,
+    }
+  );
 };

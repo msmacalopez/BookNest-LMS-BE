@@ -6,6 +6,11 @@ const BorrowHistorySchema = new mongoose.Schema(
       type: String,
       enum: ["borrowed", "returned", "overdue", "reviewed"],
     },
+    reviewId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Review",
+      // not required to create a BorrowObject
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -36,12 +41,17 @@ const BorrowHistorySchema = new mongoose.Schema(
     dueDate: {
       type: Date,
       required: true,
-      default: "",
+      // default: "",
     },
     returnDate: {
       type: Date,
-      default: "",
+      // default: "",
+    },
+    returnedById: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
     },
   },
   { timestamps: true }
 );
+export default mongoose.model("Borrow", BorrowHistorySchema);

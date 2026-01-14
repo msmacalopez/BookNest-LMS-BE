@@ -24,21 +24,19 @@ const reviewSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Borrow",
       required: true,
-      unique: true,
+      unique: true, //one review per borrow
       index: 1,
     },
     bookId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Book",
       required: true,
-      index: 1,
     },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      unique: true,
-      index: 1,
+      // Not unique, same user in multiple reviews
     },
   },
   { timestamps: true }

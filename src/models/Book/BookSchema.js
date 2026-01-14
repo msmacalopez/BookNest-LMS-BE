@@ -52,10 +52,16 @@ const bookSchema = new mongoose.Schema(
       required: true,
       enum: ["Hardcover", "Paperback", "Ebook", "Audiobook"],
     },
-    quantity: {
+    quantityTotal: {
       type: Number,
       required: true,
       min: 0,
+    },
+    quantityAvailable: {
+      type: Number,
+      default: function () {
+        return this.quantityTotal;
+      },
     },
     isAvailable: {
       type: Boolean,
