@@ -236,11 +236,13 @@ export const createLibrarianController = async (req, res, next) => {
       role: "admin",
     };
     const newLibrarian = await createUserModel(librarianObj);
+    // remove hashed-pass
+    newLibrarian.password = "";
 
     res.status(201).json({
       status: "success",
       message: "Librarian created successfully",
-      // data: newLibrarian,
+      data: newLibrarian,
     });
   } catch (error) {
     next(error);

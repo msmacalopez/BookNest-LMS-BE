@@ -1,5 +1,4 @@
 import Joi from "joi";
-import { hashPassword } from "../utils/bcrypt";
 
 const STR = Joi.string();
 const STR_REQUIRED = Joi.string().required();
@@ -38,7 +37,6 @@ export const newMemberValidation = (req, res, next) => {
     email: EMAIL_REQ,
     phone: STR_REQUIRED,
     password: STR_REQUIRED,
-    role: STR_REQUIRED.valid("member"),
   });
   return joiValidator({ req, res, next, schema });
 };
@@ -63,10 +61,9 @@ export const updateMyMemberValidation = (req, res, next) => {
 };
 
 /////////////////////////////by admin
-//only updates the role or status
+//only updates on status
 export const updateMemberByAdminValidation = (req, res, next) => {
   const schema = Joi.object({
-    role: STR.valid("superadmin", "admin", "member"),
     status: STR.valid("active", "inactive", "suspended", "deactivated"),
   }).unknown(false); // <- reject any other fields
 
