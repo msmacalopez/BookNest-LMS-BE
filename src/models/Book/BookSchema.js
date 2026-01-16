@@ -59,9 +59,9 @@ const bookSchema = new mongoose.Schema(
     },
     quantityAvailable: {
       type: Number,
-      default: function () {
-        return this.quantityTotal;
-      },
+      default: null,
+      // default: function () {
+      //   return this.quantityTotal;
     },
     isAvailable: {
       type: Boolean,
@@ -98,6 +98,11 @@ const bookSchema = new mongoose.Schema(
       default: 0,
       min: 0,
       max: 5,
+    },
+    timesBorrowed: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
   },
   { timestamps: true }

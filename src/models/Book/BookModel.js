@@ -9,13 +9,25 @@ export const addBookModel = (obj) => {
 // export const getAllPublicBooksModel = (filter, limit, skip, sort) => {
 //   return BookSchema.find(filter).limit(limit).skip(skip).sort(sort);
 // };
+
 // export const getAllBooks = (filter) => {
 //   return BookSchema.find(filter);
 // };
 
 // read all books (admin) {active or inactive}
-export const getAllBooksModel = (filter, limit, skip, sort) => {
-  return BookSchema.find(filter).limit(limit).skip(skip).sort(sort);
+// export const getAllBooksModel = (filter, limit, skip, sort) => {
+//   return BookSchema.find(filter).limit(limit).skip(skip).sort(sort);
+// };
+
+// read all books (admin or generic) with pagination/sort support
+export const getAllBooksModel = (filter = {}, limit, skip, sort) => {
+  let query = BookSchema.find(filter);
+
+  if (limit) query = query.limit(limit);
+  if (skip) query = query.skip(skip);
+  if (sort) query = query.sort(sort);
+
+  return query;
 };
 
 // read book by id
