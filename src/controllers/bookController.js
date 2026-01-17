@@ -8,6 +8,7 @@ import {
 import { getAllReviewsModel } from "../models/Review/ReviewModel.js";
 
 ////////////////////////////////////////////////Public
+// for searching in public books
 export const searchPublicBooksController = async (req, res, next) => {
   try {
     //extract atributes form searching
@@ -35,21 +36,26 @@ export const searchPublicBooksController = async (req, res, next) => {
       ];
     }
 
-    //pagination & sort
+    //pagination: page; request for page: p1,p2,p3... etc
     const page = parseInt(req.query.page || "1", 10);
-    const limit = parseInt(req.query.limit || "10", 10);
-    const skip = (page - 1) * limit;
+
+    //limit, skip, sort;
+    const limit = parseInt(req.query.limit || "10", 10); // items show per page
+    const skip = (page - 1) * limit; //how may items skip at the beggining
+    //page = which page user wants
+    //limit = how many items per page
+    //skip = how many items to ignore based on current page
 
     //sort
     const sortBy = req.query.sortBy || "createdAt";
     const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
     const sort = { [sortBy]: sortOrder };
 
+    // run in parallell: getAllBooksModel + countDocuments
+    // total=total of results that match the filter
     const [books, total] = await Promise.all([
       getAllBooksModel(filter, limit, skip, sort),
       // count for pagination
-      // direct use of model for performance
-      // (you could also expose a countModel if you prefer)
       import("../models/Book/BookSchema.js").then(({ default: BookSchema }) =>
         BookSchema.countDocuments(filter)
       ),
@@ -57,7 +63,7 @@ export const searchPublicBooksController = async (req, res, next) => {
 
     return res.status(200).json({
       status: "success",
-      message: "Public books found",
+      message: "Public books found in the search",
       data: books,
       pagination: {
         total,
@@ -143,21 +149,129 @@ export const addBookController = async (req, res, next) => {
   }
 };
 
-// ?????????????
+// for searching in All books -> ADMIN
 export const searchAllBooksController = async (req, res, next) => {
   try {
-  } catch (error) {}
+    const { title, author, genre, typeEdition, language, status } = req.query;
+
+    const filter = {};
+
+    if (status) filter.status = status;
+    if (title) filter.title = new RegExp(title, "i");
+    if (author) filter.author = new RegExp(author, "i");
+    if (genre) filter.genre = genre;
+    if (typeEdition) filter.typeEdition = typeEdition;
+    if (language) filter.language = language;
+
+    if (q) {
+      filter.$or = [
+        { title: new RegExp(q, "i") },
+        { author: new RegExp(q, "i") },
+        { isbn: new RegExp(q, "i") },
+      ];
+    }
+
+    const page = parseInt(req.query.page || "1", 10);
+    const limit = parseInt(req.query.limit || "10", 10);
+    const skip = (page - 1) * limit;
+
+    const sortBy = req.query.sortBy || "createdAt";
+    const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
+    const sort = { [sortBy]: sortOrder };
+
+    const [books, total] = await Promise.all([
+      getAllBooksModel(filter, limit, skip, sort),
+      import("../models/Book/BookSchema.js").then(({ default: BookSchema }) =>
+        BookSchema.countDocuments(filter)
+      ),
+    ]);
+
+    return res.status(200).json({
+      status: "success",
+      message: "All Books found",
+      data: books,
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
-// get all books (admin) {active or inactive}
+// get all books (admin) {active and inactive} ===> can be modify for search public or admin
 export const getAllBooksController = async (req, res, next) => {
   try {
-  } catch (error) {}
+    const { status } = req.query;
+    const filter = {};
+
+    // only modify filter if status is provided
+    if (status === "active" || status === "inactive") {
+      filter.status = status;
+    }
+
+    const page = parseInt(req.query.page || "1", 10);
+    const limit = parseInt(req.query.limit || "10", 10);
+    const skip = (page - 1) * limit;
+
+    const sortBy = req.query.sortBy || "createdAt";
+    const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
+    const sort = { [sortBy]: sortOrder };
+
+    const BookSchema = (await import("../models/Book/BookSchema.js")).default;
+
+    const [books, total] = await Promise.all([
+      getAllBooksModel(filter, limit, skip, sort),
+      BookSchema.countDocuments(filter),
+    ]);
+
+    return res.status(200).json({
+      status: "success",
+      message: "Admin Books retrieved successfully",
+      data: books,
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const getBookByIdController = async (req, res, next) => {
   try {
-  } catch (error) {}
+    const { bookId } = req.params;
+
+    if (!bookId) {
+      return res.status(400).json({
+        status: "error",
+        message: "Book ID is required",
+      });
+    }
+
+    const book = await getBookByIdModel(bookId);
+
+    if (!book) {
+      return res.status(404).json({
+        status: "error",
+        message: "Book not found",
+      });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      message: "Book found",
+      data: book,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const updateBookController = async (req, res, next) => {
@@ -167,5 +281,35 @@ export const updateBookController = async (req, res, next) => {
 
 export const deleteBookController = async (req, res, next) => {
   try {
-  } catch (error) {}
+    const { bookId } = req.params;
+
+    if (!bookId) {
+      return res.status(400).json({
+        status: "error",
+        message: "Book ID is required, book not found",
+      });
+    }
+
+    const deletedBook = await deleteBookModel(bookId);
+
+    if (!deletedBook) {
+      return res.status(404).json({
+        status: "error",
+        message: "Book not found or already deleted",
+      });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      message: "Book deleted successfully",
+      //data: deletedbook,
+      data: {
+        _id: deletedBook._id,
+        title: deletedBook.title,
+        isbn: deletedBook.isbn,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
 };

@@ -5,6 +5,7 @@ import {
   getBookByIdModel,
   reserveBookCopyModel,
   releaseBookCopyModel,
+  updateBookModel,
 } from "../models/Book/BookModel.js";
 
 // From BorrowHistory Model

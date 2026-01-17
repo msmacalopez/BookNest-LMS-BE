@@ -47,6 +47,7 @@ export const deleteBookModel = (id) => {
 
 //////Increase-decrease availability
 // Decrement the availableBooks and return BookObject
+// Increment the timesBorrowed as well
 export const reserveBookCopyModel = (bookId) => {
   return BookSchema.findOneAndUpdate(
     {
@@ -54,7 +55,10 @@ export const reserveBookCopyModel = (bookId) => {
       quantityAvailable: { $gt: 0 }, //not negatives
     },
     {
-      $inc: { quantityAvailable: -1 },
+      $inc: {
+        quantityAvailable: -1,
+        timesBorrowed: 1,
+      },
     },
     {
       new: true,
