@@ -32,7 +32,12 @@ export const getAllBooksModel = (filter = {}, limit, skip, sort) => {
 
 // read book by id
 export const getBookByIdModel = (id) => {
-  return BookSchema.findById(id);
+  return BookSchema.findOne({ _id: id });
+};
+
+//active only
+export const getActiveBookByIdModel = (id) => {
+  return BookSchema.findOne({ _id: id, status: "active" });
 };
 
 //update book by id

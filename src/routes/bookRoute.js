@@ -1,31 +1,48 @@
 import express from "express";
+import {
+  addBookController,
+  deleteBookController,
+  getActiveBookByIdController,
+  getAllBooksController,
+  getAllPublicBooksController,
+  getBookByIdController,
+  searchAllBooksController,
+  searchPublicBooksController,
+  updateBookController,
+} from "../controllers/bookController.js";
 
 const router = express.Router();
 
 router.post("/addbook", addBookController);
 // -> add authMiddleware, isAdminMiddleware, addBookValidator (Joi)
 
-// ??????
-router.post("/searchbooks", searchPublicBooksController);
+// ?????? -> used
+router.get("/searchbooks", searchPublicBooksController);
 // no validator
 
-// ??????
-router.post("/searchallbooks", searchAllBooksController);
+// ?????? -> used
+router.get("/searchallbooks", searchAllBooksController);
 // -> add authMiddleware, isAdminMiddleware
 
+//--> not used
 router.get("/books", getAllPublicBooksController);
 // no validator
 
+// ->not used
 router.get("/allbooks", getAllBooksController);
 // -> add authMiddleware, isAdminMiddleware
 
-router.get("/books/:id", getBookByIdController);
-// -> add authMiddleware
+// active book only ->any
+router.get("/books/:bookId", getActiveBookByIdController);
 
-router.patch("/updatebook/:id", updateBookController);
+//active or inactive book -> admin
+router.get("/allbooks/:bookId", getBookByIdController);
+// -> Auth middleware, isAdmin
+
+router.patch("/updatebook/:bookId", updateBookController);
 // -> add authMiddleware, isAdminMiddleware, updateBookValidator (Joi)
 
-router.delete("/deletebook/:id", deleteBookController);
+router.delete("/deletebook/:bookId", deleteBookController);
 // -> add authMiddleware, isAdminMiddleware
 
 export default router;

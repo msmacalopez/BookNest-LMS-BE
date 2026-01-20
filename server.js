@@ -8,6 +8,7 @@ import authRoute from "./src/routes/authRoute.js";
 import memberRoute from "./src/routes/memberRoute.js";
 import adminRoute from "./src/routes/adminRoute.js";
 import superAdminRoute from "./src/routes/superAdminRoute.js";
+import bookRoute from "./src/routes/bookRoute.js";
 
 // Create an Express application - server instance
 const app = express();
@@ -36,7 +37,7 @@ app.use("/api/v1/admin", adminRoute);
 app.use("/api/v1/superadmin", superAdminRoute);
 
 //Book Routes
-// app.use("/api/v1/books", bookRoute);
+app.use("/api/v1/books", bookRoute);
 
 //Borrows Routes
 // app.use("/api/v1/borrows", borrowsRoute);

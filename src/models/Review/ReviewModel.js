@@ -1,4 +1,4 @@
-import ReviewSchema from "./ReviewModel.js";
+import ReviewSchema from "./ReviewSchema.js";
 
 //by member
 //Create a new review

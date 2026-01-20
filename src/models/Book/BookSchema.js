@@ -5,7 +5,7 @@ const bookSchema = new mongoose.Schema(
     status: {
       type: String,
       enum: ["active", "inactive"],
-      default: "active",
+      required: true,
     },
     title: {
       type: String,
@@ -29,7 +29,7 @@ const bookSchema = new mongoose.Schema(
       type: Number,
       required: true,
       min: 1000,
-      max: new Date().getFullYear(),
+      max: 2025,
     },
     genre: {
       type: String,
@@ -87,7 +87,7 @@ const bookSchema = new mongoose.Schema(
     coverImageUrl: {
       type: String,
       required: false,
-      default: "https://pixabay.com/vectors/image-pictures-icon-photo-1271454/",
+      default: "na",
     },
     // counterReviews: {
     //   type: Number,

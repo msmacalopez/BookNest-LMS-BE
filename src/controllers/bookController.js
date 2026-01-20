@@ -4,6 +4,7 @@ import {
   getBookByIdModel,
   updateBookModel,
   deleteBookModel,
+  getActiveBookByIdModel,
 } from "../models/Book/BookModel.js";
 import { getAllReviewsModel } from "../models/Review/ReviewModel.js";
 
@@ -152,7 +153,8 @@ export const addBookController = async (req, res, next) => {
 // for searching in All books -> ADMIN
 export const searchAllBooksController = async (req, res, next) => {
   try {
-    const { title, author, genre, typeEdition, language, status } = req.query;
+    const { title, author, genre, typeEdition, language, status, q } =
+      req.query;
 
     const filter = {};
 
@@ -244,6 +246,39 @@ export const getAllBooksController = async (req, res, next) => {
   }
 };
 
+// any user --> active only
+export const getActiveBookByIdController = async (req, res, next) => {
+  try {
+    const { bookId } = req.params;
+
+    if (!bookId) {
+      return res.status(400).json({
+        status: "error",
+        message: "Book ID is required",
+      });
+    }
+
+    const book = await getActiveBookByIdModel(bookId);
+
+    if (!book) {
+      return res.status(404).json({
+        status: "error",
+        message: "Book not found",
+      });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      message: "Book found",
+      data: book,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// admin --> active or inactive
+// any user --> active only
 export const getBookByIdController = async (req, res, next) => {
   try {
     const { bookId } = req.params;
@@ -276,7 +311,39 @@ export const getBookByIdController = async (req, res, next) => {
 
 export const updateBookController = async (req, res, next) => {
   try {
-  } catch (error) {}
+    const { bookId } = req.params;
+
+    if (!bookId) {
+      return res.status(400).json({
+        status: "error",
+        message: "Book ID is required",
+      });
+    }
+
+    const updatedObj = { ...req.body };
+
+    // If quantityAvailable was changed, update isAvailable
+    if (typeof updatedObj.quantityAvailable === "number") {
+      updatedObj.isAvailable = updatedObj.quantityAvailable > 0;
+    }
+
+    const updatedBook = await updateBookModel(bookId, updatedObj);
+
+    if (!updatedBook) {
+      return res.status(404).json({
+        status: "error",
+        message: "Book not found",
+      });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      message: "Book updated successfully",
+      data: updatedBook,
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const deleteBookController = async (req, res, next) => {

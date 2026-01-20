@@ -24,6 +24,7 @@ export const getAllBorrowsModel = (filter = {}) => {
     .populate("userId", "fName lName email status role")
     .populate("bookId", "title typeEdition coverImageUrl")
     .populate("reviewId", "rating title comment status")
+    .populate("createdById", "fName lName email role")
     .populate("returnedById", "email");
 };
 

@@ -9,9 +9,10 @@
 @borrowsEP = {{apiEP}}/borrows
 @reviewsEP = {{apiEP}}/reviews
 
-@sessionJWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAYS5jb20iLCJpYXQiOjE3NjgzNjY5NzEsImV4cCI6MTc2ODQ1MzM3MX0.7d4FufyTWhpIyYIxamYKysqXIwmX7T4ml1klpxfEqxY
-@renewJWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAYS5jb20iLCJpYXQiOjE3NjgzNjY5NzEsImV4cCI6MTc3MDk1ODk3MX0.AOJBzwEwi0_d94TIxKx3RGWeGhdIZBYU0QGZqxCNG80
-############################# AUTH
+@sessionJWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAYS5jb20iLCJpYXQiOjE3Njg5MTQyMjgsImV4cCI6MTc2OTAwMDYyOH0.HKU0vyg_VVwUACl-MGUJV_QVDwoyULRARiBrT7rI4u4
+@renewJWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAYS5jb20iLCJpYXQiOjE3Njg5MTQyMjgsImV4cCI6MTc3MTUwNjIyOH0.oVHcIpS6mZDyKuwbwDbjGUzF46d3LQHxUPVr5zgdDHs
+
+############################# AUTH Routes ##################
 ### login
 POST {{authEP}}/login
 Content-Type: application/json
@@ -132,4 +133,88 @@ Content-Type: application/json
 
 {
      "role":"member"
+}
+
+
+################################ BOOK Routes ###############
+### Add book - Admin
+POST {{bookEP}}/addbook
+Authorization: {{sessionJWT}}
+Content-Type: application/json
+
+{
+    "title":"book2",
+    "status":"inactive",
+    "author":"Garcia marquez",
+    "isbn":"123231243",
+    "description":"Fantasy book... ",
+    "genre":"Fiction",
+    "publicationYear": 1990,
+    "typeEdition":"Hardcover",
+    "quantityTotal": 65,
+    "language":"spanish",
+    "publisher":"Andes Editorial",
+    "pages": 130,
+    "country":"Venezuela"
+}
+
+### SearchBooks - any
+GET {{bookEP}}/searchbooks?title=ha
+Accept: application/json
+### Search books - any - one input q
+GET {{bookEP}}/searchbooks?q=garcia
+Accept: application/json
+
+### Search with pagination
+GET {{bookEP}}/searchbooks?q=harry&page=2&limit=10
+Accept: application/json
+
+### Search with sorting (title asc)
+GET {{bookEP}}/searchbooks?q=harry&sortBy=title&sortOrder=asc
+Accept: application/json
+
+### Search All Books -> admin
+GET {{bookEP}}/searchallbooks?q=h&page=1&limit=10
+Accept: application/json
+
+
+// No filter q
+####################### get all public books
+GET {{bookEP}}/searchbooks?page=1&limit=10
+Accept: application/json
+
+// no filter q
+####################### get all books -> admin
+GET {{bookEP}}/searchallbooks?page=1&limit=10
+Accept: application/json
+
+### Get Book By Id -any user
+GET {{bookEP}}/books/696f7eac6cf0858227674a1f
+
+### Get Book By Id -admin
+GET {{bookEP}}/allbooks/696f874d1d459a5025f70347
+Authorization: {{sessionJWT}}
+
+### modify book by id -> admin
+PATCH {{bookEP}}/updatebook/696f874d1d459a5025f70347
+Authorization: {{sessionJWT}}
+Content-Type: application/json
+
+{
+    "title":"book3"
+}
+
+### delete book3
+DELETE {{bookEP}}/deletebook/696f874d1d459a5025f70347
+Authorization: {{sessionJWT}}
+
+#################################  BORROWS ROUTES ############################
+
+### create a borrow -> admin
+POST {{borrowsEP}}/69667a436218554d7e21f0e4/696f7eac6cf0858227674a1f
+Authorization: {{sessionJWT}}
+Content-Type: application/json
+
+{
+
 }

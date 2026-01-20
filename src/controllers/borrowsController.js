@@ -69,6 +69,77 @@ export const createBorrowController = async (req, res, next) => {
   }
 };
 
+export const createBorrowForUserController = async (req, res, next) => {
+  try {
+    // 1. Admin info from auth middleware (already enforced by isAdmin on route)
+    const adminId = req.userInfo?._id;
+    if (!adminId) {
+      return res.status(401).json({
+        status: "error",
+        message: "Unauthorized: Needs to log in as admin",
+      });
+    }
+
+    // 2. Borrower userId and bookId from params
+    const { userId, bookId } = req.params;
+
+    if (!userId || !bookId) {
+      return res.status(400).json({
+        status: "error",
+        message: "Both userId and bookId are required",
+      });
+    }
+
+    // 3. Ensure user exists and is active (optional but good)
+    const user = await getUserByIdModel(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found",
+      });
+    }
+
+    if (user.status && user.status !== "active") {
+      return res.status(400).json({
+        status: "error",
+        message: "User is not active and cannot borrow books",
+      });
+    }
+
+    // 4. Try to reserve a copy of the book
+    const reservedBook = await reserveBookCopyModel(bookId);
+    if (!reservedBook) {
+      return res.status(400).json({
+        status: "error",
+        message: "No available copies for this volume",
+      });
+    }
+
+    // 5. Create borrow history (snapshot style)
+    const borrowRecord = await createBorrowHistoryModel({
+      userId,
+      createdById: adminId,
+      bookId: reservedBook._id,
+      bookTitle: reservedBook.title,
+      typeEdition: reservedBook.typeEdition,
+      coverImageUrl: reservedBook.coverImageUrl,
+      borrowDate: new Date(),
+      dueDate: calcDueDate(),
+      status: "borrowed",
+      // You could later add: createdById: adminId
+    });
+
+    // 6. Return response
+    return res.status(201).json({
+      status: "success",
+      message: "Book borrowed successfully for user",
+      data: borrowRecord,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getMyBorrowsController = async (req, res, next) => {
   try {
     //get user Id from auth
