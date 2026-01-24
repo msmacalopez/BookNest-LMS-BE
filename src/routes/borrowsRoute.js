@@ -6,25 +6,39 @@ import {
   getAllBorrowsController,
   getMyBorrowsController,
 } from "../controllers/borrowsController.js";
-import { auth } from "../middlewares/authMiddleware.js";
+
+//Auth middlewares
+import { auth, isActiveUser, isAdmin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-//by umember -> only E-books
-router.post("/:bookId", auth, createBorrowController);
+//by member -> only E-books
+router.post("/:bookId", auth, isActiveUser, createBorrowController);
 // -> add authMiddleware, createBorrowValidator (Joi)
 
 //by admin -> any book
-router.post("/:userId/:bookId", auth, createBorrowForUserController);
+router.post(
+  "/:userId/:bookId",
+  auth,
+  isAdmin,
+  isActiveUser,
+  createBorrowForUserController
+);
 //> add AuthMiddleware, isAdmin, createBorrowValidator(Joi),
 
 router.get("/myborrows", auth, getMyBorrowsController);
 // -> add authMiddleware
 
-router.get("/allborrows", auth, getAllBorrowsController);
+router.get("/allborrows", auth, isAdmin, isActiveUser, getAllBorrowsController);
 // -> add authMiddleware, isAdminMiddleware
 
-router.patch("/returnbook/:borrowId", auth, adminReturnBookController);
+router.patch(
+  "/returnbook/:borrowId",
+  auth,
+  isAdmin,
+  isActiveUser,
+  adminReturnBookController
+);
 // -> add authMiddleware, isAdminMiddleware
 
 export default router;

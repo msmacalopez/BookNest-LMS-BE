@@ -6,18 +6,25 @@ import {
   getReviewsByBookController,
   updateReviewController,
 } from "../controllers/reviewController.js";
-import { auth } from "../middlewares/authMiddleware.js";
+//Auth middlewares
+import { auth, isActiveUser, isAdmin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/:borrowId", auth, createReviewController);
+router.post("/:borrowId", auth, isActiveUser, createReviewController);
 // -> add authMiddleware, createReviewValidator (Joi)
 
-router.get("/allreviews", auth, getAllReviewsController);
+router.get("/allreviews", auth, isAdmin, isActiveUser, getAllReviewsController);
 // -> add authMiddleware, isAdminMiddleware
 
 // admin can approve or reject reviews
-router.patch("/updatereview/:reviewId", auth, updateReviewController);
+router.patch(
+  "/updatereview/:reviewId",
+  auth,
+  isAdmin,
+  isActiveUser,
+  updateReviewController
+);
 // -> add authMiddleware, isAdmin, updateReviewValidator (Joi)
 
 // Get active reviews for a book (public)
