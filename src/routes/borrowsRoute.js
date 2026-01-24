@@ -18,13 +18,13 @@ router.post("/:bookId", auth, createBorrowController);
 router.post("/:userId/:bookId", auth, createBorrowForUserController);
 //> add AuthMiddleware, isAdmin, createBorrowValidator(Joi),
 
-router.get("/myborrows", getMyBorrowsController);
+router.get("/myborrows", auth, getMyBorrowsController);
 // -> add authMiddleware
 
-router.get("/allborrows", getAllBorrowsController);
+router.get("/allborrows", auth, getAllBorrowsController);
 // -> add authMiddleware, isAdminMiddleware
 
-router.patch("/returnbook/:borrowId", adminReturnBookController);
+router.patch("/returnbook/:borrowId", auth, adminReturnBookController);
 // -> add authMiddleware, isAdminMiddleware
 
 export default router;

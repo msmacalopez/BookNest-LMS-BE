@@ -223,3 +223,8 @@ Authorization: {{sessionJWT}}
 Content-Type: application/json
 
 {}
+
+### get my borrows -> member
+GET {{borrowsEP}}/myborrows
+Authorization: {{sessionJWT}}
+
