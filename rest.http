@@ -228,3 +228,10 @@ Content-Type: application/json
 GET {{borrowsEP}}/myborrows
 Authorization: {{sessionJWT}}
 
+### get all borrows -> admin
+GET {{borrowsEP}}/allborrows
+Authorization: {{sessionJWT}}
+
+### return a book -> Admin
+PATCH {{borrowsEP}}/returnbook/6974c7980669cda97174f19a
+Authorization: {{sessionJWT}}
