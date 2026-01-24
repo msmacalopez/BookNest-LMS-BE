@@ -29,7 +29,10 @@ const bookSchema = new mongoose.Schema(
       type: Number,
       required: true,
       min: 1000,
-      max: 2025,
+      validate: {
+        validator: (v) => v <= new Date().getFullYear(),
+        message: "Publication year cannot be in the future",
+      },
     },
     genre: {
       type: String,
@@ -60,6 +63,7 @@ const bookSchema = new mongoose.Schema(
     quantityAvailable: {
       type: Number,
       default: null,
+      min: 0,
       // default: function () {
       //   return this.quantityTotal;
     },

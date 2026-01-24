@@ -13,10 +13,19 @@ import {
 
 // Auth middlewares
 import { auth, isActiveUser, isAdmin } from "../middlewares/authMiddleware.js";
+// Joi Validators
+import { addBook, updateBook } from "../middlewares/joiValidation.js";
 
 const router = express.Router();
 
-router.post("/addbook", auth, isAdmin, isActiveUser, addBookController);
+router.post(
+  "/addbook",
+  addBook,
+  auth,
+  isAdmin,
+  isActiveUser,
+  addBookController
+);
 // -> add authMiddleware, isAdminMiddleware, addBookValidator (Joi)
 
 // search/get Public books -> used
@@ -59,6 +68,7 @@ router.patch(
   auth,
   isAdmin,
   isActiveUser,
+  updateBook,
   updateBookController
 );
 // -> add authMiddleware, isAdminMiddleware, updateBookValidator (Joi)

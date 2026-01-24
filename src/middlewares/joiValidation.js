@@ -5,7 +5,7 @@ const STR_REQUIRED = Joi.string().required();
 const EMAIL = STR.email({ minDomainSegments: 2 });
 const EMAIL_REQ = STR_REQUIRED.email({ minDomainSegments: 2 });
 const ISTRUE = Joi.boolean();
-const NUM_REQ = Joi.number();
+const NUM = Joi.number();
 
 const joiValidator = ({ req, res, next, schema }) => {
   try {
@@ -131,6 +131,85 @@ export const downToMemberValidation = (req, res, next) => {
   const schema = Joi.object({
     role: Joi.string().valid("member").required(),
   });
+
+  return joiValidator({ req, res, next, schema });
+};
+
+///////////////////////////book validators
+// create a book
+export const addBook = (req, res, next) => {
+  const currentYear = new Date().getFullYear();
+
+  const schema = Joi.object({
+    status: STR_REQUIRED.valid("active", "inactive"),
+    title: STR_REQUIRED,
+    author: STR_REQUIRED,
+    isbn: STR_REQUIRED,
+    description: STR_REQUIRED,
+    publicationYear: NUM.integer().required().min(1000).max(currentYear),
+    genre: STR_REQUIRED.valid(
+      "Fiction",
+      "Non-Fiction",
+      "Science Fiction",
+      "Fantasy",
+      "Mystery",
+      "Biography",
+      "History",
+      "Children's",
+      "Romance",
+      "Horror"
+    ),
+    typeEdition: STR_REQUIRED.valid(
+      "Hardcover",
+      "Paperback",
+      "Ebook",
+      "Audiobook"
+    ),
+    quantityTotal: NUM.integer().required().min(0),
+    quantityAvailable: NUM.integer().min(0),
+    isAvailable: ISTRUE,
+    language: STR_REQUIRED,
+    publisher: STR_REQUIRED,
+    pages: NUM.integer().required().min(1),
+    country: STR_REQUIRED,
+    coverImageUrl: STR.uri(), //valid url
+    averageRating: NUM.min(0).max(5),
+    timesBorrowed: NUM.integer().min(0),
+  });
+  return joiValidator({ req, res, next, schema });
+};
+
+export const updateBook = (req, res, next) => {
+  if ("isAvailable" in req.body) delete req.body.isAvailable;
+
+  const currentYear = new Date().getFullYear();
+  const schema = Joi.object({
+    status: STR.valid("active", "inactive"),
+    title: STR,
+    author: STR,
+    isbn: STR,
+    description: STR,
+    publicationYear: NUM.integer().min(1000).max(currentYear),
+    genre: STR.valid(
+      "Fiction",
+      "Non-Fiction",
+      "Science Fiction",
+      "Fantasy",
+      "Mystery",
+      "Biography",
+      "History",
+      "Children's",
+      "Romance",
+      "Horror"
+    ),
+    typeEdition: STR.valid("Hardcover", "Paperback", "Ebook", "Audiobook"),
+    quantityTotal: NUM.integer().min(0),
+    language: STR,
+    publisher: STR,
+    pages: NUM.integer().min(1),
+    country: STR,
+    coverImageUrl: STR.uri().allow("na", "", null),
+  }).unknown(false);
 
   return joiValidator({ req, res, next, schema });
 };

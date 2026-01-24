@@ -146,7 +146,7 @@ Content-Type: application/json
     "title":"book2",
     "status":"inactive",
     "author":"Garcia marquez",
-    "isbn":"123231243",
+    "isbn":"123231222",
     "description":"Fantasy book... ",
     "genre":"Fiction",
     "publicationYear": 1990,
@@ -159,34 +159,34 @@ Content-Type: application/json
 }
 
 ### SearchBooks - any
-GET {{bookEP}}/searchbooks?title=ha
-Accept: application/json
+GET {{bookEP}}/searchbooks?title=hu
+Authorization: {{sessionJWT}}
 ### Search books - any - one input q
 GET {{bookEP}}/searchbooks?q=garcia
-Accept: application/json
+Authorization: {{sessionJWT}}
 
 ### Search with pagination
 GET {{bookEP}}/searchbooks?q=harry&page=2&limit=10
-Accept: application/json
+Authorization: {{sessionJWT}}
 
 ### Search with sorting (title asc)
 GET {{bookEP}}/searchbooks?q=harry&sortBy=title&sortOrder=asc
-Accept: application/json
+Authorization: {{sessionJWT}}
 
 ### Search All Books -> admin
 GET {{bookEP}}/searchallbooks?q=h&page=1&limit=10
-Accept: application/json
+Authorization: {{sessionJWT}}
 
 
 // No filter q
 ####################### get all public books
 GET {{bookEP}}/searchbooks?page=1&limit=10
-Accept: application/json
+Authorization: {{sessionJWT}}
 
 // no filter q
 ####################### get all books -> admin
 GET {{bookEP}}/searchallbooks?page=1&limit=10
-Accept: application/json
+Authorization: {{sessionJWT}}
 
 ### Get Book By Id -any user
 GET {{bookEP}}/books/696f7eac6cf0858227674a1f
@@ -196,12 +196,12 @@ GET {{bookEP}}/allbooks/696f874d1d459a5025f70347
 Authorization: {{sessionJWT}}
 
 ### modify book by id -> admin
-PATCH {{bookEP}}/updatebook/696f874d1d459a5025f70347
+PATCH {{bookEP}}/updatebook/696f7eac6cf0858227674a1f
 Authorization: {{sessionJWT}}
 Content-Type: application/json
 
 {
-    "title":"book3"
+    "title":"book4"
 }
 
 ### delete book3
