@@ -29,7 +29,6 @@ const BorrowHistorySchema = new mongoose.Schema(
     typeEdition: {
       type: String,
       required: true,
-      enum: ["Hardcover", "Paperback", "Ebook", "Audiobook"],
     },
     coverImageUrl: {
       type: String,

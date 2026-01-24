@@ -15,7 +15,9 @@ import {
   getAllBorrowsModel,
   adminReturnBorrowModel,
 } from "../models/Borrow/BorrowHistoryModel.js";
+import { getUserByIdModel } from "../models/User/UserModel.js";
 
+// create borrow for himself
 export const createBorrowController = async (req, res, next) => {
   try {
     // 1. userInfo from auth middleware
@@ -56,6 +58,7 @@ export const createBorrowController = async (req, res, next) => {
       borrowDate: new Date(),
       dueDate: calcDueDate(),
       status: "borrowed",
+      createdById: userId,
     });
 
     // 5. Return response to front-end
@@ -69,6 +72,7 @@ export const createBorrowController = async (req, res, next) => {
   }
 };
 
+// create borrow a user -> by admin-librarian
 export const createBorrowForUserController = async (req, res, next) => {
   try {
     // 1. Admin info from auth middleware (already enforced by isAdmin on route)

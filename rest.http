@@ -9,8 +9,8 @@
 @borrowsEP = {{apiEP}}/borrows
 @reviewsEP = {{apiEP}}/reviews
 
-@sessionJWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAYS5jb20iLCJpYXQiOjE3Njg5MTQyMjgsImV4cCI6MTc2OTAwMDYyOH0.HKU0vyg_VVwUACl-MGUJV_QVDwoyULRARiBrT7rI4u4
-@renewJWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAYS5jb20iLCJpYXQiOjE3Njg5MTQyMjgsImV4cCI6MTc3MTUwNjIyOH0.oVHcIpS6mZDyKuwbwDbjGUzF46d3LQHxUPVr5zgdDHs
+@sessionJWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAYS5jb20iLCJpYXQiOjE3NjkyNTc1NzMsImV4cCI6MTc2OTM0Mzk3M30.XQYsAUxZ5Y7dvmu82W1ymO5WRC4C4OZL8PEuz7_hvv0
+@renewJWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAYS5jb20iLCJpYXQiOjE3NjkyNTc1NzMsImV4cCI6MTc3MTg0OTU3M30.2IPl5azOyQXmfETmzLLOqeyG4fExw6YjzmsRrVu7cNA
 
 ############################# AUTH Routes ##################
 ### login
@@ -215,6 +215,11 @@ POST {{borrowsEP}}/69667a436218554d7e21f0e4/696f7eac6cf0858227674a1f
 Authorization: {{sessionJWT}}
 Content-Type: application/json
 
-{
+{}
 
-}
+### create a borrow for myself -> member
+POST {{borrowsEP}}/696f7eac6cf0858227674a1f
+Authorization: {{sessionJWT}}
+Content-Type: application/json
+
+{}
