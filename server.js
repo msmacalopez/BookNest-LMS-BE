@@ -10,6 +10,7 @@ import adminRoute from "./src/routes/adminRoute.js";
 import superAdminRoute from "./src/routes/superAdminRoute.js";
 import bookRoute from "./src/routes/bookRoute.js";
 import borrowsRoute from "./src/routes/borrowsRoute.js";
+import reviewRoute from "./src/routes/reviewRoute.js";
 
 // Create an Express application - server instance
 const app = express();
@@ -44,7 +45,7 @@ app.use("/api/v1/books", bookRoute);
 app.use("/api/v1/borrows", borrowsRoute);
 
 //Review Routes
-// app.use("/api/v1/reviews", reviewRoute);
+app.use("/api/v1/reviews", reviewRoute);
 
 // error validator
 app.use((error, req, res, next) => {

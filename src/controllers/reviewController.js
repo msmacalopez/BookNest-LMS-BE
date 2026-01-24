@@ -140,7 +140,7 @@ export const getMyReviewsController = async (req, res, next) => {
       });
     }
     const reviewsOfUser = await getActiveReviewsByBookIdModel(userId);
-    return res.status.json({
+    return res.status(200).json({
       status: "success",
       message: "User reviews retrieved successfully",
       data: reviewsOfUser,

@@ -6,24 +6,25 @@ import {
   getReviewsByBookController,
   updateReviewController,
 } from "../controllers/reviewController.js";
+import { auth } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
+
+router.post("/:borrowId", auth, createReviewController);
+// -> add authMiddleware, createReviewValidator (Joi)
+
+router.get("/allreviews", auth, getAllReviewsController);
+// -> add authMiddleware, isAdminMiddleware
+
+// admin can approve or reject reviews
+router.patch("/updatereview/:reviewId", auth, updateReviewController);
+// -> add authMiddleware, isAdmin, updateReviewValidator (Joi)
 
 // Get active reviews for a book (public)
 router.get("/book/:bookId", getReviewsByBookController);
 
-router.post("/:borrowId", createReviewController);
-// -> add authMiddleware, createReviewValidator (Joi)
-
 //active reviews
-router.get("/myreviews", getMyReviewsController);
+router.get("/myreviews", auth, getMyReviewsController);
 // -> add authMiddleware
-
-router.get("/allreviews", getAllReviewsController);
-// -> add authMiddleware, isAdminMiddleware
-
-// admin can approve or reject reviews
-router.patch("/updatereview/:reviewId", updateReviewController);
-// -> add authMiddleware, isAdmin, updateReviewValidator (Joi)
 
 export default router;

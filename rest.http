@@ -235,3 +235,33 @@ Authorization: {{sessionJWT}}
 ### return a book -> Admin
 PATCH {{borrowsEP}}/returnbook/6974c7980669cda97174f19a
 Authorization: {{sessionJWT}}
+
+################# REVIEW ROUTES ######################
+### Create a review for a book
+POST {{reviewsEP}}/6974c7980669cda97174f19a
+Authorization: {{sessionJWT}}
+Content-Type: application/json
+
+{
+    "rating":4,
+    "title":"Amazing Read",
+    "comment":"Great book, really enjoyed it!"
+}
+
+### get ALL reviews ->admin
+GET {{reviewsEP}}/allreviews
+Authorization: {{sessionJWT}}
+
+### Make review active -> admin
+PATCH {{reviewsEP}}/updatereview/6974d3682985eef24f139b5d
+Authorization: {{sessionJWT}}
+Content-Type: application/json
+
+{}
+
+### Get Active Reviews for 1 book -> any
+GET {{reviewsEP}}/book/696f7eac6cf0858227674a1f
+
+### Get my active reviews only -> member
+GET {{reviewsEP}}/myreviews
+Authorization: {{sessionJWT}}
