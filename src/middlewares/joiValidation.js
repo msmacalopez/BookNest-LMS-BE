@@ -230,3 +230,22 @@ export const adminReturnBorrow = (req, res, next) => {
 
   return joiValidator({ req, res, next, schema });
 };
+
+//////////////////////review validator
+export const createAReview = (req, res, next) => {
+  const schema = Joi.object({
+    rating: NUM.integer().min(1).max(5).required(),
+
+    title: STR_REQUIRED.trim().min(1).max(120),
+
+    comment: STR.trim().max(2000).allow("", null).optional(),
+  }).unknown(false); // block borrowId, userId, bookId, status
+
+  return joiValidator({ req, res, next, schema });
+};
+
+export const updateReviewToActive = (req, res, next) => {
+  const schema = Joi.object({}).max(0).unknown(false);
+
+  return joiValidator({ req, res, next, schema });
+};

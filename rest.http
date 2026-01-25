@@ -238,7 +238,7 @@ Authorization: {{sessionJWT}}
 
 ################# REVIEW ROUTES ######################
 ### Create a review for a book
-POST {{reviewsEP}}/6974c7980669cda97174f19a
+POST {{reviewsEP}}/69763ab0cb330ed0faaa68bd
 Authorization: {{sessionJWT}}
 Content-Type: application/json
 
@@ -253,7 +253,7 @@ GET {{reviewsEP}}/allreviews
 Authorization: {{sessionJWT}}
 
 ### Make review active -> admin
-PATCH {{reviewsEP}}/updatereview/6974d3682985eef24f139b5d
+PATCH {{reviewsEP}}/updatereview/69763fb3e5de0b841ab85ad6
 Authorization: {{sessionJWT}}
 Content-Type: application/json
 

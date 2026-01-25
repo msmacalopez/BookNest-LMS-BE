@@ -6,12 +6,25 @@ import {
   getReviewsByBookController,
   updateReviewController,
 } from "../controllers/reviewController.js";
+
 //Auth middlewares
 import { auth, isActiveUser, isAdmin } from "../middlewares/authMiddleware.js";
 
+//Joi validation middleware
+import {
+  createAReview,
+  updateReviewToActive,
+} from "../middlewares/joiValidation.js";
+
 const router = express.Router();
 
-router.post("/:borrowId", auth, isActiveUser, createReviewController);
+router.post(
+  "/:borrowId",
+  auth,
+  isActiveUser,
+  createAReview,
+  createReviewController
+);
 // -> add authMiddleware, createReviewValidator (Joi)
 
 router.get("/allreviews", auth, isAdmin, isActiveUser, getAllReviewsController);
@@ -23,6 +36,7 @@ router.patch(
   auth,
   isAdmin,
   isActiveUser,
+  updateReviewToActive,
   updateReviewController
 );
 // -> add authMiddleware, isAdmin, updateReviewValidator (Joi)
