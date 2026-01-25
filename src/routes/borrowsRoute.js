@@ -1,7 +1,7 @@
 import express from "express";
 import {
   adminReturnBookController,
-  createBorrowController,
+  createMyBorrowController,
   createBorrowForUserController,
   getAllBorrowsController,
   getMyBorrowsController,
@@ -9,11 +9,22 @@ import {
 
 //Auth middlewares
 import { auth, isActiveUser, isAdmin } from "../middlewares/authMiddleware.js";
+// Joi validation middleware
+import {
+  adminReturnBorrow,
+  createAnyBorrow,
+} from "../middlewares/joiValidation.js";
 
 const router = express.Router();
 
 //by member -> only E-books
-router.post("/:bookId", auth, isActiveUser, createBorrowController);
+router.post(
+  "/:bookId",
+  auth,
+  isActiveUser,
+  createAnyBorrow,
+  createMyBorrowController
+);
 // -> add authMiddleware, createBorrowValidator (Joi)
 
 //by admin -> any book
@@ -22,6 +33,7 @@ router.post(
   auth,
   isAdmin,
   isActiveUser,
+  createAnyBorrow,
   createBorrowForUserController
 );
 //> add AuthMiddleware, isAdmin, createBorrowValidator(Joi),
@@ -37,6 +49,7 @@ router.patch(
   auth,
   isAdmin,
   isActiveUser,
+  adminReturnBorrow,
   adminReturnBookController
 );
 // -> add authMiddleware, isAdminMiddleware

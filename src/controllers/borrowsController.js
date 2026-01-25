@@ -18,7 +18,7 @@ import {
 import { getUserByIdModel } from "../models/User/UserModel.js";
 
 // create borrow for himself
-export const createBorrowController = async (req, res, next) => {
+export const createMyBorrowController = async (req, res, next) => {
   try {
     // 1. userInfo from auth middleware
     const userId = req.userInfo?._id;
@@ -45,6 +45,14 @@ export const createBorrowController = async (req, res, next) => {
       return res.status(400).json({
         status: "error",
         message: "No available copies for this volume",
+      });
+    }
+
+    // member can only borrow Ebook
+    if (reservedBook.typeEdition !== "Ebook") {
+      return res.status(403).json({
+        status: "error",
+        message: "Members can only borrow Ebook editions",
       });
     }
 
@@ -130,7 +138,7 @@ export const createBorrowForUserController = async (req, res, next) => {
       borrowDate: new Date(),
       dueDate: calcDueDate(),
       status: "borrowed",
-      // You could later add: createdById: adminId
+      createdById: adminId,
     });
 
     // 6. Return response

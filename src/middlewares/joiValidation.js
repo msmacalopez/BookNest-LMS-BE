@@ -213,3 +213,20 @@ export const updateBook = (req, res, next) => {
 
   return joiValidator({ req, res, next, schema });
 };
+
+/////////////////////borrow validators
+// create a borrow by member (Ebook)
+export const createAnyBorrow = (req, res, next) => {
+  const schema = Joi.object({})
+    .max(0) // body must be empty
+    .unknown(false); // reject any unexpected fields
+
+  return joiValidator({ req, res, next, schema });
+};
+export const adminReturnBorrow = (req, res, next) => {
+  const schema = Joi.object({})
+    .max(0) // body must be empty
+    .unknown(false); // block any fields
+
+  return joiValidator({ req, res, next, schema });
+};

@@ -9,8 +9,8 @@
 @borrowsEP = {{apiEP}}/borrows
 @reviewsEP = {{apiEP}}/reviews
 
-@sessionJWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAYS5jb20iLCJpYXQiOjE3NjkyNTc1NzMsImV4cCI6MTc2OTM0Mzk3M30.XQYsAUxZ5Y7dvmu82W1ymO5WRC4C4OZL8PEuz7_hvv0
-@renewJWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAYS5jb20iLCJpYXQiOjE3NjkyNTc1NzMsImV4cCI6MTc3MTg0OTU3M30.2IPl5azOyQXmfETmzLLOqeyG4fExw6YjzmsRrVu7cNA
+@sessionJWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAYS5jb20iLCJpYXQiOjE3NjkzNTU4MzMsImV4cCI6MTc2OTQ0MjIzM30.UnjvopRDgdIJbSMCEXPFCi8j9PwZAv5nCx3ci98IUwU
+@renewJWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAYS5jb20iLCJpYXQiOjE3NjkzNTU4MzMsImV4cCI6MTc3MTk0NzgzM30.V9ichS8M7EfNN7QFPhvO7EACjzWTI-DymdbBzd-e6K0
 
 ############################# AUTH Routes ##################
 ### login
@@ -146,11 +146,11 @@ Content-Type: application/json
     "title":"book2",
     "status":"inactive",
     "author":"Garcia marquez",
-    "isbn":"123231222",
+    "isbn":"123231228",
     "description":"Fantasy book... ",
     "genre":"Fiction",
     "publicationYear": 1990,
-    "typeEdition":"Hardcover",
+    "typeEdition":"Ebook",
     "quantityTotal": 65,
     "language":"spanish",
     "publisher":"Andes Editorial",
@@ -208,7 +208,7 @@ Content-Type: application/json
 DELETE {{bookEP}}/deletebook/696f874d1d459a5025f70347
 Authorization: {{sessionJWT}}
 
-#################################  BORROWS ROUTES ############################
+################################  BORROWS ROUTES ############################
 
 ### create a borrow -> admin
 POST {{borrowsEP}}/69667a436218554d7e21f0e4/696f7eac6cf0858227674a1f
@@ -218,7 +218,7 @@ Content-Type: application/json
 {}
 
 ### create a borrow for myself -> member
-POST {{borrowsEP}}/696f7eac6cf0858227674a1f
+POST {{borrowsEP}}/69763a9acb330ed0faaa68b9
 Authorization: {{sessionJWT}}
 Content-Type: application/json
 
@@ -233,7 +233,7 @@ GET {{borrowsEP}}/allborrows
 Authorization: {{sessionJWT}}
 
 ### return a book -> Admin
-PATCH {{borrowsEP}}/returnbook/6974c7980669cda97174f19a
+PATCH {{borrowsEP}}/returnbook/69763ab0cb330ed0faaa68bd
 Authorization: {{sessionJWT}}
 
 ################# REVIEW ROUTES ######################
@@ -265,3 +265,4 @@ GET {{reviewsEP}}/book/696f7eac6cf0858227674a1f
 ### Get my active reviews only -> member
 GET {{reviewsEP}}/myreviews
 Authorization: {{sessionJWT}}
+
