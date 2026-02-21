@@ -18,6 +18,7 @@ export const searchPublicBooksController = async (req, res, next) => {
     const filter = {
       status: "active",
     };
+
     //RegExp: allows partial matching
     //Find books where the title contains the search text, and ignore case sensitivity=i
     if (title) filter.title = new RegExp(title, "i");
@@ -48,7 +49,18 @@ export const searchPublicBooksController = async (req, res, next) => {
     //skip = how many items to ignore based on current page
 
     //sort
-    const sortBy = req.query.sortBy || "createdAt";
+    const allowedSortFields = [
+      "createdAt",
+      "timesBorrowed",
+      "averageRating",
+      "title",
+    ];
+    const sortByRaw = req.query.sortBy || "createdAt";
+    const sortBy = allowedSortFields.includes(sortByRaw)
+      ? sortByRaw
+      : "createdAt";
+
+    // const sortBy = req.query.sortBy || "createdAt";
     const sortOrder = req.query.sortOrder === "asc" ? 1 : -1;
     const sort = { [sortBy]: sortOrder };
 

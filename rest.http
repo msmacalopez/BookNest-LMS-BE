@@ -9,7 +9,7 @@
 @borrowsEP = {{apiEP}}/borrows
 @reviewsEP = {{apiEP}}/reviews
 
-@sessionJWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAYS5jb20iLCJpYXQiOjE3NjkzNTU4MzMsImV4cCI6MTc2OTQ0MjIzM30.UnjvopRDgdIJbSMCEXPFCi8j9PwZAv5nCx3ci98IUwU
+@sessionJWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAYS5jb20iLCJpYXQiOjE3NzE1NTY2MTEsImV4cCI6MTc3MTY0MzAxMX0.GFHqTqFUTrVNcIjRqSMjTihfHW8mVdAQHXLq-yjS-ZQ
 @renewJWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAYS5jb20iLCJpYXQiOjE3NjkzNTU4MzMsImV4cCI6MTc3MTk0NzgzM30.V9ichS8M7EfNN7QFPhvO7EACjzWTI-DymdbBzd-e6K0
 
 ############################# AUTH Routes ##################
@@ -18,7 +18,7 @@ POST {{authEP}}/login
 Content-Type: application/json
 
 {
-    "email":"test@a.com",
+    "email":"test@member.com",
     "password":"123"
 }
 
@@ -32,11 +32,12 @@ POST {{memberEP}}/register
 Content-Type: application/json
 
 {
-    "email":"test3@a.com",
+    "email":"backendCreated@a.com",
     "password":"123",
-    "phone":"04583831",
+    "phone":"1",
     "fName":"testName",
-    "lName":"testLastname"
+    "lName":"testLastname",
+    "address":"104 church st"
 }
 
 ### Get my details
@@ -49,7 +50,7 @@ Authorization: {{sessionJWT}}
 Content-Type: application/json
 
 {
-    "email":"lib2@a.com",
+    "email":"test@a.com",
     "password":"123",
     "phone":"045838321",
     "fName":"testName2",

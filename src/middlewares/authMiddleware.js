@@ -102,6 +102,7 @@ export const renewAuth = async (req, res, next) => {
       message: decoded,
       status: 401, // not authenticated
     };
+
     next(error);
   } catch (error) {
     next(error);
