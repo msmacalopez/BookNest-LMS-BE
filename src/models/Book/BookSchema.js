@@ -91,7 +91,7 @@ const bookSchema = new mongoose.Schema(
     coverImageUrl: {
       type: String,
       required: false,
-      default: "na",
+      default: "",
     },
     // counterReviews: {
     //   type: Number,
