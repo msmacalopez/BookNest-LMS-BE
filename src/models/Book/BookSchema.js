@@ -64,8 +64,9 @@ const bookSchema = new mongoose.Schema(
       type: Number,
       default: null,
       min: 0,
-      // default: function () {
-      //   return this.quantityTotal;
+      default: function () {
+        return this.quantityTotal;
+      },
     },
     isAvailable: {
       type: Boolean,
@@ -99,7 +100,7 @@ const bookSchema = new mongoose.Schema(
     // },
     averageRating: {
       type: Number,
-      default: 0,
+      default: 0.000000001,
       min: 0,
       max: 5,
     },

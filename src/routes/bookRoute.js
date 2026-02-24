@@ -51,7 +51,7 @@ router.get(
 // -> add authMiddleware, isAdminMiddleware
 
 // active book only ->any
-router.get("/books/:bookId", getActiveBookByIdController);
+router.get("/book/:bookId", getActiveBookByIdController);
 
 //active or inactive book -> admin
 router.get(
