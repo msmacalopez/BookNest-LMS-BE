@@ -68,3 +68,28 @@ export const updateMyBorrowHistoryModel = (borrowId, userId, updatedObj) => {
     { new: true }
   );
 };
+
+//Detect expire books
+export const getExpiredEbookBorrowsModel = () => {
+  return BorrowHistorySchema.find({
+    status: { $in: ["borrowed", "overdue"] },
+    typeEdition: "Ebook",
+    dueDate: { $lte: new Date() },
+  });
+};
+
+//make Ebook which are overdue -> autoreturn
+export const autoReturnBorrowModel = (borrowId) => {
+  return BorrowHistorySchema.findOneAndUpdate(
+    {
+      _id: borrowId,
+      status: { $in: ["borrowed", "overdue"] },
+    },
+    {
+      status: "returned",
+      returnDate: new Date(),
+      returnedById: null,
+    },
+    { new: true }
+  );
+};

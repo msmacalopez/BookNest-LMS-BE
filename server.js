@@ -12,6 +12,9 @@ import bookRoute from "./src/routes/bookRoute.js";
 import borrowsRoute from "./src/routes/borrowsRoute.js";
 import reviewRoute from "./src/routes/reviewRoute.js";
 
+//auto Return Job
+import { startAutoReturnEbooksJob } from "./src/jobs/autoReturnEbooks.js";
+
 // Create an Express application - server instance
 const app = express();
 const PORT = config.port;
@@ -69,3 +72,6 @@ connectMongoDB()
   .catch((error) => {
     console.error("Failed to connect to MongoDB:", error);
   });
+
+//// after mongoose connects -> RUN AUTORETURN JOB
+startAutoReturnEbooksJob();
