@@ -2,6 +2,7 @@ import {
   createReviewModel,
   getReviewByBorrowIdModel,
   getActiveReviewsByBookIdModel,
+  getActiveReviewsByUserIdModel,
   getAllReviewsModel,
   updateReviewModel,
 } from "../models/Review/ReviewModel.js";
@@ -139,7 +140,9 @@ export const getMyReviewsController = async (req, res, next) => {
         message: "Unauthorized: Needs to log in",
       });
     }
-    const reviewsOfUser = await getActiveReviewsByBookIdModel(userId);
+
+    const reviewsOfUser = await getActiveReviewsByUserIdModel(userId);
+
     return res.status(200).json({
       status: "success",
       message: "User reviews retrieved successfully",

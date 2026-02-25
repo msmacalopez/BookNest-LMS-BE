@@ -21,10 +21,10 @@ export const getReviewByBorrowIdModel = (borrowId) => {
 
 //Get my reviews???
 // Get reviews by user ID -> can be many
-export const getReviewsByUserModel = (userId) => {
-  return ReviewSchema.find({ user: userId })
-    .populate("book", "title author")
-    .exec();
+export const getActiveReviewsByUserIdModel = (userId) => {
+  return ReviewSchema.find({ userId, status: "active" })
+    .sort({ createdAt: -1 })
+    .populate("bookId", "title author coverImageUrl typeEdition");
 };
 
 // Get all reviews (can filter reviews by borrowID, etc)
