@@ -141,12 +141,25 @@ export const getMyReviewsController = async (req, res, next) => {
       });
     }
 
-    const reviewsOfUser = await getActiveReviewsByUserIdModel(userId);
+    const page = Math.max(1, parseInt(req.query.page || "1", 10));
+    const limit = Math.max(1, parseInt(req.query.limit || "10", 10));
+    const skip = (page - 1) * limit;
+
+    const { items, total } = await getActiveReviewsByUserIdModel(userId, {
+      skip,
+      limit,
+    });
+
+    const pages = Math.max(1, Math.ceil(total / limit));
 
     return res.status(200).json({
       status: "success",
       message: "User reviews retrieved successfully",
-      data: reviewsOfUser,
+      data: {
+        items,
+        pagination: { total, page, limit, pages },
+        params: { page, limit, sortBy: "createdAt", sortOrder: "desc" },
+      },
     });
   } catch (error) {
     next(error);

@@ -6,15 +6,18 @@ export const createBorrowHistoryModel = (borrowObj) => {
 };
 
 // Get my borrow history (logged in user)
-export const getMyBorrowHistoryModel = (userId) => {
-  return (
+export const getMyBorrowHistoryModel = async (userId, { skip, limit }) => {
+  const [items, total] = await Promise.all([
     BorrowHistorySchema.find({ userId })
-      .sort({ borrowDate: -1 }) //last borr first
-      //Add field from Book
-      .populate("bookId", "title coverImageUrl typeEdition")
-      //Add fiels from Review
-      .populate("reviewId", "rating title comment status")
-  );
+      .sort({ borrowDate: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("bookId", "title author coverImageUrl typeEdition")
+      .populate("reviewId", "rating title comment status"),
+    BorrowHistorySchema.countDocuments({ userId }),
+  ]);
+
+  return { items, total };
 };
 
 // Get all borrow history records (admin/librarian)

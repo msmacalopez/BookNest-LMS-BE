@@ -162,11 +162,35 @@ export const getMyBorrowsController = async (req, res, next) => {
         message: "Unauthorized: Needs to log in",
       });
     }
-    const borrows = await getMyBorrowHistoryModel(userId);
+
+    //pagination: page; request for page: p1,p2,p3... etc
+    const page = parseInt(req.query.page || "1", 10);
+
+    //limit, skip, sort;
+    const limit = parseInt(req.query.limit || "10", 10); // items show per page
+    const skip = (page - 1) * limit; //how may items skip at the beggining
+    //page = which page user wants
+    //limit = how many items per page
+    //skip = how many items to ignore based on current page
+
+    const { items, total } = await getMyBorrowHistoryModel(userId, {
+      skip,
+      limit,
+    });
+
     return res.status(200).json({
       status: "success",
       message: "Borrow History retrieved successfully",
-      data: borrows,
+      data: {
+        items,
+        pagination: {
+          total,
+          page,
+          limit,
+          pages: Math.ceil(total / limit),
+        },
+        params: { page, limit, sortBy: "borrowDate", sortOrder: "desc" },
+      },
     });
   } catch (error) {
     next(error);

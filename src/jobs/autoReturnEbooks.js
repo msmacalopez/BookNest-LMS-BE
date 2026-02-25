@@ -9,7 +9,7 @@ export const startAutoReturnEbooksJob = () => {
   // Runs every day at 3:00 AM server time
   //PRODUCTION: "0 3 * * *"
   //TESTING: "* * * * *"
-  cron.schedule("0 3 * * *", async () => {
+  cron.schedule("* * * * *", async () => {
     try {
       const expired = await getExpiredEbookBorrowsModel();
 
@@ -28,3 +28,4 @@ export const startAutoReturnEbooksJob = () => {
     }
   });
 };
+//TEST: autoReturnEbooks,helper.js and CreateMyBorrowontroller (BorrowRecord)

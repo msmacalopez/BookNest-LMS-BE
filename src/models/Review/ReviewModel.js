@@ -19,12 +19,25 @@ export const getReviewByBorrowIdModel = (borrowId) => {
 //     .exec();
 // };
 
-//Get my reviews???
+//Get my reviews!!
 // Get reviews by user ID -> can be many
-export const getActiveReviewsByUserIdModel = (userId) => {
-  return ReviewSchema.find({ userId, status: "active" })
-    .sort({ createdAt: -1 })
-    .populate("bookId", "title author coverImageUrl typeEdition");
+export const getActiveReviewsByUserIdModel = async (
+  userId,
+  { skip = 0, limit = 10 } = {}
+) => {
+  const filter = { userId, status: "active" };
+
+  const [items, total] = await Promise.all([
+    ReviewSchema.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("bookId", "title author coverImageUrl typeEdition")
+      .populate("borrowId", "borrowDate returnDate"),
+    ReviewSchema.countDocuments(filter),
+  ]);
+
+  return { items, total };
 };
 
 // Get all reviews (can filter reviews by borrowID, etc)
