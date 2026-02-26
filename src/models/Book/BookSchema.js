@@ -62,7 +62,6 @@ const bookSchema = new mongoose.Schema(
     },
     quantityAvailable: {
       type: Number,
-      default: null,
       min: 0,
       default: function () {
         return this.quantityTotal;
@@ -92,7 +91,8 @@ const bookSchema = new mongoose.Schema(
     coverImageUrl: {
       type: String,
       required: false,
-      default: "",
+      default:
+        "https://upload.wikimedia.org/wikipedia/commons/a/ac/No_image_available.svg",
     },
     // counterReviews: {
     //   type: Number,

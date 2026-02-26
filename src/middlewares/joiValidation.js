@@ -174,7 +174,7 @@ export const addBook = (req, res, next) => {
     publisher: STR_REQUIRED,
     pages: NUM.integer().required().min(1),
     country: STR_REQUIRED,
-    coverImageUrl: STR.uri(), //valid url
+    coverImageUrl: STR.uri().allow("", null).optional(), //valid url, can be empty
     averageRating: NUM.min(0).max(5),
     timesBorrowed: NUM.integer().min(0),
   });
