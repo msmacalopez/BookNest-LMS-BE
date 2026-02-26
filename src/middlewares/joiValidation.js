@@ -251,3 +251,23 @@ export const updateReviewToActive = (req, res, next) => {
 
   return joiValidator({ req, res, next, schema });
 };
+
+export const changePasswordValidation = (req, res, next) => {
+  const schema = Joi.object({
+    currentPassword: Joi.string().required(),
+    newPassword: Joi.string().min(6).required(),
+    confirmNewPassword: Joi.string()
+      .valid(Joi.ref("newPassword"))
+      .required()
+      .messages({ "any.only": "Confirm password must match new password" }),
+  });
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({
+      status: "error",
+      message: error.details[0].message,
+    });
+  }
+  next();
+};

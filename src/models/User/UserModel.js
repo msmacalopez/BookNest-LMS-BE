@@ -13,6 +13,25 @@ export const getUserByIdModel = (userId) => {
   return UserSchema.findOne({ _id: userId }).select("-password");
 };
 
+//// Get user by ID but include password
+export const getUserByIdWithPasswordModel = (userId) => {
+  return UserSchema.findOne({ _id: userId });
+};
+
+// when udating password:
+export const updatePasswordByUserIdModel = (userId, hashedPassword) => {
+  return UserSchema.findOneAndUpdate(
+    { _id: userId },
+    {
+      $set: {
+        password: hashedPassword,
+        refreshJWT: "",
+      },
+    },
+    { new: true, select: "-password" }
+  );
+};
+
 // Get all users -> filter can be empty
 export const getAllUsersModel = (filter) => {
   return UserSchema.find(filter).select("-password");

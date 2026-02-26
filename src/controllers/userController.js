@@ -1,10 +1,12 @@
-import { hashPassword } from "../utils/bcrypt.js";
+import { comparePassword, hashPassword } from "../utils/bcrypt.js";
 import {
   getAllUsersModel,
   getUserByIdModel,
   createUserModel,
   deleteUserModel,
   updateUserModel,
+  getUserByIdWithPasswordModel,
+  updatePasswordByUserIdModel,
 } from "../models/User/UserModel.js";
 
 /////////////////////////// Member functions controller - MEMBER
@@ -58,6 +60,9 @@ export const updateMyDetailsController = async (req, res, next) => {
     const updatedObj = { ...req.body };
     updatedObj.role = req.userInfo.role; // prevent role update
 
+    //password will be updated in email
+    // delete updatedObj.password;
+
     // if password is to be updated, hash it
     if (updatedObj?.password) {
       updatedObj.password = hashPassword(updatedObj.password);
@@ -69,6 +74,49 @@ export const updateMyDetailsController = async (req, res, next) => {
       status: "success",
       message: "Your details have been updated",
       data: updatedUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+//to update password
+export const changeMyPasswordController = async (req, res, next) => {
+  try {
+    const userId = req.userInfo._id;
+    const { currentPassword, newPassword } = req.body;
+
+    const user = await getUserByIdWithPasswordModel(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "User not found" });
+    }
+
+    const isMatch = comparePassword(currentPassword, user.password);
+    if (!isMatch) {
+      return res.status(400).json({
+        status: "error",
+        message: "Current password is incorrect",
+      });
+    }
+
+    //block using same password
+    const sameAsOld = comparePassword(newPassword, user.password);
+    if (sameAsOld) {
+      return res.status(400).json({
+        status: "error",
+        message: "New password must be different from current password",
+      });
+    }
+
+    const hashed = hashPassword(newPassword);
+
+    await updatePasswordByUserIdModel(userId, hashed);
+
+    return res.status(200).json({
+      status: "success",
+      message: "Password updated successfully. Please log in again.",
     });
   } catch (error) {
     next(error);
