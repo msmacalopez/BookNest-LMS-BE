@@ -11,6 +11,7 @@ import {
   getUsersPagedModel,
   deleteUsersByIdsModel,
 } from "../models/User/UserModel.js";
+import UserSchema from "../models/User/UserSchema.js";
 
 /////////////////////////// Member functions controller - MEMBER
 // create new user (member)
@@ -505,6 +506,16 @@ export const superadminListUsersController = async (req, res, next) => {
 export const superadminGetUserByIdController = async (req, res, next) => {
   try {
     const { id } = req.params;
+
+    //prevent himself
+    const requesterId = req.userInfo?._id;
+    if (requesterId && String(requesterId) === String(id)) {
+      return res.status(403).json({
+        status: "error",
+        message: "You cannot view your own account from this panel.",
+      });
+    }
+
     const user = await getUserByIdModel(id);
     if (!user) {
       return res
@@ -542,6 +553,15 @@ export const superadminCreateUserController = async (req, res, next) => {
 export const superadminUpdateUserController = async (req, res, next) => {
   try {
     const { id } = req.params;
+
+    //prevent edit itself(not superadmin edition)
+    const requesterId = req.userInfo?._id;
+    if (requesterId && String(requesterId) === String(id)) {
+      return res.status(403).json({
+        status: "error",
+        message: "You cannot edit your own account from this panel.",
+      });
+    }
     const obj = { ...req.body };
 
     //BLOCK password updates
@@ -567,6 +587,12 @@ export const superadminUpdateUserController = async (req, res, next) => {
 export const superadminDeleteUserController = async (req, res, next) => {
   try {
     const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res
+        .status(400)
+        .json({ status: "error", message: "Invalid user id" });
+    }
 
     // 1) Prevent deleting yourself
     const requesterId = req.userInfo?._id;

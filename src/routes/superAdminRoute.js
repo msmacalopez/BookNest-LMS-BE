@@ -113,6 +113,17 @@ router.get(
   superadminListUsersController
 );
 
+//before :id routes to avoid conflict with /users/bulk
+router.delete(
+  "/users/bulk",
+  auth,
+  isAdmin,
+  isSuperAdmin,
+  isActiveUser,
+  bulkDeleteUsersValidation,
+  superadminBulkDeleteUsersController
+);
+
 router.get(
   "/users/:id",
   auth,
@@ -151,13 +162,4 @@ router.delete(
   superadminDeleteUserController
 );
 
-router.delete(
-  "/users/bulk",
-  auth,
-  isAdmin,
-  isSuperAdmin,
-  isActiveUser,
-  bulkDeleteUsersValidation,
-  superadminBulkDeleteUsersController
-);
 export default router;
