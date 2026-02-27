@@ -29,6 +29,13 @@ export const createMyBorrowController = async (req, res, next) => {
       });
     }
 
+    const user = await getUserByIdModel(userId);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "User not found" });
+    }
+
     // 2. bookId from params
     const { bookId } = req.params;
     if (!bookId) {
@@ -56,6 +63,7 @@ export const createMyBorrowController = async (req, res, next) => {
       });
     }
 
+    //TODO
     // 4. Create borrow history (snapshot style)
     const borrowRecord = await createBorrowHistoryModel({
       userId,
@@ -67,6 +75,11 @@ export const createMyBorrowController = async (req, res, next) => {
       dueDate: calcDueDate(0.001),
       status: "borrowed",
       createdById: userId,
+
+      bookAuthor: reservedBook.author,
+      bookIsbn: reservedBook.isbn,
+      memberEmail: user.email,
+      createdByEmail: user.email,
     });
 
     // 5. Return response to front-end
@@ -92,9 +105,15 @@ export const createBorrowForUserController = async (req, res, next) => {
       });
     }
 
+    const adminUser = await getUserByIdModel(adminId);
+    if (!adminUser) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "Admin not found" });
+    }
+
     // 2. Borrower userId and bookId from params
     const { userId, bookId } = req.params;
-
     if (!userId || !bookId) {
       return res.status(400).json({
         status: "error",
@@ -139,6 +158,11 @@ export const createBorrowForUserController = async (req, res, next) => {
       dueDate: calcDueDate(),
       status: "borrowed",
       createdById: adminId,
+
+      bookAuthor: reservedBook.author,
+      bookIsbn: reservedBook.isbn,
+      memberEmail: user.email,
+      createdByEmail: adminUser.email,
     });
 
     // 6. Return response
@@ -199,14 +223,45 @@ export const getMyBorrowsController = async (req, res, next) => {
 
 export const getAllBorrowsController = async (req, res, next) => {
   try {
-    const filter = {};
+    const q = (req.query.q || "").trim();
+    const status = (req.query.status || "").trim();
 
-    const borrows = await getAllBorrowsModel(filter);
+    const page = parseInt(req.query.page || "1", 10);
+    const limit = parseInt(req.query.limit || "10", 10);
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+    if (status) filter.status = status;
+
+    if (q) {
+      const rx = new RegExp(q, "i");
+      filter.$or = [
+        { bookTitle: rx },
+        { bookAuthor: rx },
+        { bookIsbn: rx },
+        { memberEmail: rx },
+        { createdByEmail: rx },
+        { returnedByEmail: rx },
+        { status: rx },
+        { typeEdition: rx },
+      ];
+    }
+
+    const { items, total } = await getAllBorrowsModel(filter, { skip, limit });
 
     return res.status(200).json({
       status: "success",
       message: "All borrow records retrieved Successfully",
-      data: borrows,
+      data: {
+        items,
+        pagination: {
+          total,
+          page,
+          limit,
+          pages: Math.ceil(total / limit),
+        },
+        params: { q, status, page, limit },
+      },
     });
   } catch (error) {
     next(error);
@@ -236,9 +291,19 @@ export const adminReturnBookController = async (req, res, next) => {
       });
     }
 
-    // 1. Update borrow: borrowed/overdue -> returned (add adminId, returnDate and returnedById)
-    const updatedBorrow = await adminReturnBorrowModel(borrowId, adminId);
+    const adminUser = await getUserByIdModel(adminId);
+    if (!adminUser) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "Admin not found" });
+    }
 
+    // 1. Update borrow: borrowed/overdue -> returned (add adminId, returnDate and returnedById)
+    const updatedBorrow = await adminReturnBorrowModel(
+      borrowId,
+      adminId,
+      adminUser.email
+    );
     if (!updatedBorrow) {
       return res.status(400).json({
         status: "error",

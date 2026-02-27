@@ -8,6 +8,12 @@ import {
   getAllLibrariansController,
   updateLibrarianInfoController,
   upgradeUserToLibrarianController,
+  superadminListUsersController,
+  superadminGetUserByIdController,
+  superadminCreateUserController,
+  superadminUpdateUserController,
+  superadminDeleteUserController,
+  superadminBulkDeleteUsersController,
 } from "../controllers/userController.js";
 
 //auth middlewares
@@ -23,6 +29,9 @@ import {
   newAdminValidation,
   promoteToLibrarianValidation,
   updateLibrarianValidation,
+  createUserBySuperAdminValidation,
+  updateUserBySuperAdminValidation,
+  bulkDeleteUsersValidation,
 } from "../middlewares/joiValidation.js";
 
 const router = express.Router();
@@ -39,11 +48,11 @@ router.get(
 
 router.post(
   "/create-librarian",
-  newAdminValidation,
   auth,
   isAdmin,
   isSuperAdmin,
   isActiveUser,
+  newAdminValidation,
   createLibrarianController
 );
 //-> add authMiddleware, isAdminMiddleware, isSuperAdminMiddleware, createLibrarianValidator (Joi)
@@ -60,11 +69,12 @@ router.delete(
 
 router.patch(
   "/update-librarian/:librarianId",
-  updateLibrarianValidation,
+
   auth,
   isAdmin,
   isSuperAdmin,
   isActiveUser,
+  updateLibrarianValidation,
   updateLibrarianInfoController
 );
 //-> add authMiddleware, isAdminMiddleware, isSuperAdminMiddleware, updateLibrarianValidator (Joi)
@@ -72,11 +82,12 @@ router.patch(
 //promote member to librarian
 router.patch(
   "/upgrade-librarian/:librarianId",
-  promoteToLibrarianValidation,
+
   auth,
   isAdmin,
   isSuperAdmin,
   isActiveUser,
+  promoteToLibrarianValidation,
   upgradeUserToLibrarianController
 );
 //-> add authMiddleware, isAdminMiddleware, isSuperAdminMiddleware, updateLibrarianValidator (Joi)
@@ -84,13 +95,69 @@ router.patch(
 //pdowngrade librarian to member
 router.patch(
   "/down-librarian/:librarianId",
-  downToMemberValidation,
   auth,
   isAdmin,
   isSuperAdmin,
   isActiveUser,
+  downToMemberValidation,
   downToMemberController
 );
 //-> add authMiddleware, isAdminMiddleware, isSuperAdminMiddleware, updateLibrarianValidator (Joi)
 
+router.get(
+  "/users",
+  auth,
+  isAdmin,
+  isSuperAdmin,
+  isActiveUser,
+  superadminListUsersController
+);
+
+router.get(
+  "/users/:id",
+  auth,
+  isAdmin,
+  isSuperAdmin,
+  isActiveUser,
+  superadminGetUserByIdController
+);
+
+router.post(
+  "/users",
+  auth,
+  isAdmin,
+  isSuperAdmin,
+  isActiveUser,
+  createUserBySuperAdminValidation,
+  superadminCreateUserController
+);
+
+router.patch(
+  "/users/:id",
+  auth,
+  isAdmin,
+  isSuperAdmin,
+  isActiveUser,
+  updateUserBySuperAdminValidation,
+  superadminUpdateUserController
+);
+
+router.delete(
+  "/users/:id",
+  auth,
+  isAdmin,
+  isSuperAdmin,
+  isActiveUser,
+  superadminDeleteUserController
+);
+
+router.delete(
+  "/users/bulk",
+  auth,
+  isAdmin,
+  isSuperAdmin,
+  isActiveUser,
+  bulkDeleteUsersValidation,
+  superadminBulkDeleteUsersController
+);
 export default router;

@@ -7,6 +7,9 @@ import {
   updateUserModel,
   getUserByIdWithPasswordModel,
   updatePasswordByUserIdModel,
+  getMembersPagedModel,
+  getUsersPagedModel,
+  deleteUsersByIdsModel,
 } from "../models/User/UserModel.js";
 
 /////////////////////////// Member functions controller - MEMBER
@@ -150,13 +153,53 @@ export const deleteMyAccountController = async (req, res, next) => {
 
 export const getAllMembersController = async (req, res, next) => {
   try {
-    // find all users where role === "member" and exclude password
-    const members = await getAllUsersModel({ role: "member" });
+    const q = (req.query.q || "").trim();
+    const status = (req.query.status || "").trim();
+
+    const page = Math.max(1, parseInt(req.query.page || "1", 10));
+    const limit = Math.max(1, parseInt(req.query.limit || "10", 10));
+    const skip = (page - 1) * limit;
+
+    // Base filter: only members
+    const filter = { role: "member" };
+
+    // status filter (active/inactive/suspended/deactivated)
+    if (status) filter.status = status;
+
+    // q search
+    if (q) {
+      const rx = new RegExp(q, "i");
+
+      filter.$or = [
+        { fName: rx },
+        { lName: rx },
+        { email: rx },
+        { phone: rx },
+        { address: rx },
+        { role: rx }, // will match "member" anyway
+        { status: rx },
+      ];
+
+      // search by ObjectId string
+      if (/^[0-9a-fA-F]{24}$/.test(q)) {
+        filter.$or.push({ _id: q });
+      }
+    }
+
+    const { items, total } = await getMembersPagedModel(filter, {
+      skip,
+      limit,
+    });
+    const pages = Math.max(1, Math.ceil(total / limit));
 
     return res.status(200).json({
       status: "success",
       message: "Members retrieved successfully",
-      data: members,
+      data: {
+        items,
+        pagination: { total, page, limit, pages },
+        params: { q, status, page, limit },
+      },
     });
   } catch (error) {
     next(error);
@@ -409,5 +452,198 @@ export const downToMemberController = async (req, res, next) => {
   try {
   } catch (error) {
     next(error);
+  }
+};
+
+//super admin more
+export const superadminListUsersController = async (req, res, next) => {
+  try {
+    const q = (req.query.q || "").trim();
+    const status = (req.query.status || "").trim();
+    const role = (req.query.role || "").trim(); // member/admin
+
+    const page = Math.max(1, parseInt(req.query.page || "1", 10));
+    const limit = Math.max(1, parseInt(req.query.limit || "10", 10));
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+
+    if (role) filter.role = role;
+    if (status) filter.status = status;
+
+    if (q) {
+      const rx = new RegExp(q, "i");
+      filter.$or = [
+        { fName: rx },
+        { lName: rx },
+        { email: rx },
+        { phone: rx },
+        { address: rx },
+        { role: rx },
+        { status: rx },
+      ];
+      if (/^[0-9a-fA-F]{24}$/.test(q)) filter.$or.push({ _id: q });
+    }
+
+    const { items, total } = await getUsersPagedModel(filter, { skip, limit });
+    const pages = Math.max(1, Math.ceil(total / limit));
+
+    return res.status(200).json({
+      status: "success",
+      message: "Users retrieved successfully",
+      data: {
+        items,
+        pagination: { total, page, limit, pages },
+        params: { q, status, role, page, limit },
+      },
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const superadminGetUserByIdController = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await getUserByIdModel(id);
+    if (!user) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "User not found" });
+    }
+    return res
+      .status(200)
+      .json({ status: "success", message: "User found", data: user });
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const superadminCreateUserController = async (req, res, next) => {
+  try {
+    const obj = { ...req.body };
+
+    // hash password
+    obj.password = hashPassword(obj.password);
+
+    const created = await createUserModel(obj);
+    created.password = ""; // never return password
+
+    return res.status(201).json({
+      status: "success",
+      message: "User created successfully",
+      data: created,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const superadminUpdateUserController = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const obj = { ...req.body };
+
+    //BLOCK password updates
+    if ("password" in obj) delete obj.password;
+
+    const updated = await updateUserModel({ _id: id }, obj);
+    if (!updated) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "User not found" });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      message: "User updated successfully",
+      data: updated,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const superadminDeleteUserController = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    // 1) Prevent deleting yourself
+    const requesterId = req.userInfo?._id;
+    if (requesterId && String(requesterId) === String(id)) {
+      return res.status(403).json({
+        status: "error",
+        message: "You cannot delete your own account.",
+      });
+    }
+
+    // 2) Prevent deleting any superadmin
+    const targetUser = await getUserByIdModel(id); // returns user without password
+    if (!targetUser) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found",
+      });
+    }
+
+    if (targetUser.role === "superadmin") {
+      return res.status(403).json({
+        status: "error",
+        message: "Superadmin accounts cannot be deleted.",
+      });
+    }
+
+    // 3) Safe to delete
+    const deleted = await deleteUserModel({ _id: id });
+
+    if (!deleted) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      status: "success",
+      message: "User deleted successfully",
+    });
+  } catch (e) {
+    next(e);
+  }
+};
+
+export const superadminBulkDeleteUsersController = async (req, res, next) => {
+  try {
+    const requesterId = req.userInfo?._id;
+    const { ids = [] } = req.body || {};
+
+    // remove self from deletion list
+    const filteredIds = ids.filter((x) => String(x) !== String(requesterId));
+
+    // remove any superadmin ids
+    const superadmins = await UserSchema.find({
+      _id: { $in: filteredIds },
+      role: "superadmin",
+    }).select("_id");
+
+    const superadminIds = new Set(superadmins.map((u) => String(u._id)));
+    const finalIds = filteredIds.filter((x) => !superadminIds.has(String(x)));
+
+    if (!finalIds.length) {
+      return res.status(400).json({
+        status: "error",
+        message: "No eligible users to delete (superadmin/self are protected).",
+      });
+    }
+
+    const result = await deleteUsersByIdsModel(finalIds);
+
+    return res.status(200).json({
+      status: "success",
+      message: `Deleted ${result?.deletedCount || 0} user(s)`,
+      data: { deletedCount: result?.deletedCount || 0 },
+    });
+  } catch (e) {
+    next(e);
   }
 };

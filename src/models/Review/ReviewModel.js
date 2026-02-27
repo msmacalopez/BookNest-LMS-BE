@@ -41,8 +41,22 @@ export const getActiveReviewsByUserIdModel = async (
 };
 
 // Get all reviews (can filter reviews by borrowID, etc)
-export const getAllReviewsModel = (filter) => {
-  return ReviewSchema.find(filter);
+export const getAllReviewsModel = async (
+  filter = {},
+  { skip = 0, limit = 10 } = {}
+) => {
+  const [items, total] = await Promise.all([
+    ReviewSchema.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("bookId", "title author isbn") // optional
+      .populate("userId", "email") // optional
+      .populate("borrowId", "borrowDate returnDate status"), // optional
+    ReviewSchema.countDocuments(filter),
+  ]);
+
+  return { items, total };
 };
 
 //Admin make review active

@@ -21,14 +21,23 @@ export const getMyBorrowHistoryModel = async (userId, { skip, limit }) => {
 };
 
 // Get all borrow history records (admin/librarian)
-export const getAllBorrowsModel = (filter = {}) => {
-  return BorrowHistorySchema.find(filter)
-    .sort({ createdAt: -1 })
-    .populate("userId", "fName lName email status role")
-    .populate("bookId", "title typeEdition coverImageUrl")
-    .populate("reviewId", "rating title comment status")
-    .populate("createdById", "fName lName email role")
-    .populate("returnedById", "email");
+export const getAllBorrowsModel = async (
+  filter = {},
+  { skip = 0, limit = 10 } = {}
+) => {
+  const [items, total] = await Promise.all([
+    BorrowHistorySchema.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate("userId", "fName lName email status role")
+      .populate("bookId", "title author isbn typeEdition coverImageUrl")
+      .populate("reviewId", "rating title comment status")
+      .populate("createdById", "fName lName email role")
+      .populate("returnedById", "email"),
+    BorrowHistorySchema.countDocuments(filter),
+  ]);
+  return { items, total };
 };
 
 //WHEN CREATED THE REVIEW
@@ -40,7 +49,7 @@ export const updateBorrowHistoryModel = (borrowId, updatedObj) => {
 };
 
 //Update by admin logged -> change status to {returned} only
-export const adminReturnBorrowModel = (borrowId, adminId) => {
+export const adminReturnBorrowModel = (borrowId, adminId, adminEmail) => {
   return BorrowHistorySchema.findOneAndUpdate(
     {
       _id: borrowId,
@@ -50,6 +59,7 @@ export const adminReturnBorrowModel = (borrowId, adminId) => {
       status: "returned",
       returnDate: new Date(),
       returnedById: adminId,
+      returnedByEmail: adminEmail,
     },
     { new: true }
   );
@@ -92,6 +102,7 @@ export const autoReturnBorrowModel = (borrowId) => {
       status: "returned",
       returnDate: new Date(),
       returnedById: null,
+      returnedByEmail: "system",
     },
     { new: true }
   );

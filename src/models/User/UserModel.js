@@ -60,3 +60,40 @@ export const updateUserModel = (filter, updatedObj) => {
 export const deleteUserModel = (filter) => {
   return UserSchema.findOneAndDelete(filter);
 };
+
+// Get members with pagination + filter
+export const getMembersPagedModel = async (
+  filter = {},
+  { skip = 0, limit = 10 } = {}
+) => {
+  const [items, total] = await Promise.all([
+    UserSchema.find(filter)
+      .select("-password")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    UserSchema.countDocuments(filter),
+  ]);
+
+  return { items, total };
+};
+// Paged users (superadmin)
+export const getUsersPagedModel = async (
+  filter = {},
+  { skip = 0, limit = 10 } = {}
+) => {
+  const [items, total] = await Promise.all([
+    UserSchema.find(filter)
+      .select("-password")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    UserSchema.countDocuments(filter),
+  ]);
+
+  return { items, total };
+};
+
+export const deleteUsersByIdsModel = (ids = []) => {
+  return UserSchema.deleteMany({ _id: { $in: ids } });
+};

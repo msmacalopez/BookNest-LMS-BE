@@ -23,10 +23,10 @@ router.get("/users/:id", auth, isAdmin, isActiveUser, getMemberByIdController);
 
 router.patch(
   "/update-user/:id",
-  updateMemberByAdminValidation,
   auth,
   isAdmin,
   isActiveUser,
+  updateMemberByAdminValidation,
   updateMemberController
 );
 //-> add authMiddleware, isAdminMiddleware, updateUserValidator (Joi)

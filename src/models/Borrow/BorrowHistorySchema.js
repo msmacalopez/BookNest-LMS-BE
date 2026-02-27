@@ -30,9 +30,9 @@ const BorrowHistorySchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    coverImageUrl: {
-      type: String,
-    },
+    bookAuthor: { type: String, required: true },
+    bookIsbn: { type: String, required: true },
+    memberEmail: { type: String, required: true },
     borrowDate: {
       type: Date,
       required: true,
@@ -56,6 +56,8 @@ const BorrowHistorySchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
+    createdByEmail: { type: String, required: true },
+    returnedByEmail: { type: String, default: "" },
   },
   { timestamps: true }
 );

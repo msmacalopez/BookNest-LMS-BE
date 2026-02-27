@@ -109,6 +109,14 @@ export const createReviewController = async (req, res, next) => {
       bookId: borrow.bookId,
       userId,
       status: "inactive",
+
+      bookTitle: borrow.bookTitle,
+      bookAuthor: borrow.bookAuthor,
+      bookIsbn: borrow.bookIsbn,
+      memberEmail: borrow.memberEmail,
+
+      borrowDate: borrow.borrowDate,
+      returnDate: borrow.returnDate,
     });
 
     //6.Update Borrow Entity-> add: reviewId, status -> "reviewed"
@@ -170,21 +178,47 @@ export const getMyReviewsController = async (req, res, next) => {
 //can filter reviews by bookId, userId, status or all -> filter ={}
 export const getAllReviewsController = async (req, res, next) => {
   try {
-    const { bookId, userId, status } = req.query;
-    const filter = {};
+    const q = (req.query.q || "").trim();
+    const status = (req.query.status || "").trim();
 
-    //add values in query to the filter
-    if (bookId) filter.bookId = bookId;
-    if (userId) filter.userId = userId;
+    const page = Math.max(1, parseInt(req.query.page || "1", 10));
+    const limit = Math.max(1, parseInt(req.query.limit || "10", 10));
+    const skip = (page - 1) * limit;
+
+    const filter = {};
     if (status) filter.status = status;
 
-    //get all reviews with the filter
-    const allReviews = await getAllReviewsModel(filter);
+    if (q) {
+      const rx = new RegExp(q, "i");
+      filter.$or = [
+        { title: rx },
+        { comment: rx },
+        { bookIsbn: rx },
+        { bookTitle: rx },
+        { bookAuthor: rx },
+        { memberEmail: rx },
+        { status: rx }, //searching "active"/"inactive"
+        // borrowId is ObjectId;
+      ];
+
+      //search object id -> match to  borrowId directly
+      if (/^[0-9a-fA-F]{24}$/.test(q)) {
+        filter.$or.push({ borrowId: q });
+      }
+    }
+
+    const { items, total } = await getAllReviewsModel(filter, { skip, limit });
+
+    const pages = Math.max(1, Math.ceil(total / limit));
 
     return res.status(200).json({
       status: "success",
       message: "All reviews retrieved successfully",
-      data: allReviews,
+      data: {
+        items,
+        pagination: { total, page, limit, pages },
+        params: { q, status, page, limit },
+      },
     });
   } catch (error) {
     next(error);

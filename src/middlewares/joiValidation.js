@@ -247,9 +247,20 @@ export const createAReview = (req, res, next) => {
 };
 
 export const updateReviewToActive = (req, res, next) => {
-  const schema = Joi.object({}).max(0).unknown(false);
+  const schema = Joi.object({
+    status: Joi.string().valid("active", "inactive").required(),
+  });
 
-  return joiValidator({ req, res, next, schema });
+  const { error } = schema.validate(req.body);
+
+  if (error) {
+    return res.status(400).json({
+      status: "error",
+      message: error.details?.[0]?.message || "Invalid request",
+    });
+  }
+
+  next();
 };
 
 export const changePasswordValidation = (req, res, next) => {
@@ -268,6 +279,67 @@ export const changePasswordValidation = (req, res, next) => {
       status: "error",
       message: error.details[0].message,
     });
+  }
+  next();
+};
+
+//superadmin
+export const createUserBySuperAdminValidation = (req, res, next) => {
+  const schema = Joi.object({
+    role: Joi.string().valid("admin", "member").required(),
+    status: Joi.string()
+      .valid("active", "inactive", "suspended", "deactivated")
+      .required(),
+
+    fName: Joi.string().required(),
+    lName: Joi.string().required(),
+    address: Joi.string().required(),
+    email: Joi.string().email({ minDomainSegments: 2 }).required(),
+    phone: Joi.string().required(),
+    password: Joi.string().min(6).required(),
+  }).unknown(false);
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ status: "error", message: error.message });
+  }
+  next();
+};
+
+export const updateUserBySuperAdminValidation = (req, res, next) => {
+  const schema = Joi.object({
+    role: Joi.string().valid("admin", "member"),
+    status: Joi.string().valid(
+      "active",
+      "inactive",
+      "suspended",
+      "deactivated"
+    ),
+    fName: Joi.string(),
+    lName: Joi.string(),
+    address: Joi.string(),
+    email: Joi.string().email({ minDomainSegments: 2 }),
+    phone: Joi.string(),
+  }).unknown(false);
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ status: "error", message: error.message });
+  }
+  next();
+};
+
+export const bulkDeleteUsersValidation = (req, res, next) => {
+  const schema = Joi.object({
+    ids: Joi.array()
+      .items(Joi.string().regex(/^[0-9a-fA-F]{24}$/))
+      .min(1)
+      .required(),
+  }).unknown(false);
+
+  const { error } = schema.validate(req.body);
+  if (error) {
+    return res.status(400).json({ status: "error", message: error.message });
   }
   next();
 };
