@@ -18,7 +18,12 @@ export const auth = async (req, res, next) => {
       });
     }
 
-    const decoded = verifyAccessToken(authorization);
+    //in case starts with Bearer
+    const token = authorization.startsWith("Bearer ")
+      ? authorization.split(" ")[1]
+      : authorization;
+
+    const decoded = verifyAccessToken(token);
 
     if (!decoded?.email) {
       return next({
@@ -73,8 +78,13 @@ export const renewAuth = async (req, res, next) => {
     //     1. receive jwt via authorization header
     const { authorization } = req.headers;
 
+    //in case starts with Bearer
+    const token = authorization.startsWith("Bearer ")
+      ? authorization.split(" ")[1]
+      : authorization;
+
     // 2. verify if jwt is valid(no expired, secretkey) by decoding jwt
-    const decoded = verifyRenewToken(authorization);
+    const decoded = verifyRenewToken(token);
 
     if (decoded?.email) {
       // 3. If valid decoded-token, get token object
@@ -83,7 +93,7 @@ export const renewAuth = async (req, res, next) => {
       if (true) {
         // 4. Extract email from the decoded jwt obj
         // 5. Get user by email
-        const user = await getUserByEmail(decoded.email);
+        const user = await getUserByEmailModel(decoded.email);
 
         if (user?._id) {
           // 6. If user exist, they are now authorized

@@ -1,10 +1,13 @@
+import { calcDueDate } from "../config/helper.js";
+
 import { getUserByIdModel } from "../models/User/UserModel.js";
+
 import {
   getBookByIdModel,
   reserveBookCopyForHoldModel,
   reserveBookCopyModel,
+  releaseBookCopyModel,
 } from "../models/Book/BookModel.js";
-import { calcDueDate } from "../config/helper.js";
 
 import {
   createHoldModel,
@@ -13,9 +16,14 @@ import {
   getAllHoldsModel,
   cancelHoldModel,
   fulfillHoldModel,
+  countActiveHoldsByUserModel,
 } from "../models/Hold/HoldModel.js";
 
-import { createBorrowHistoryModel } from "../models/Borrow/BorrowHistoryModel.js";
+import {
+  countActiveBorrowsByUserModel,
+  createBorrowHistoryModel,
+  hasOverdueBorrowByUserModel,
+} from "../models/Borrow/BorrowHistoryModel.js";
 
 // 2 days hold
 const HOLD_DAYS = 2;
@@ -71,7 +79,24 @@ export const createHoldController = async (req, res, next) => {
         .json({ status: "error", message: "This book is not active" });
     }
 
-    // reserve quantity (atomic)
+    //block mre than 3 holds for user
+    const activeHoldCount = await countActiveHoldsByUserModel(userId);
+    if (activeHoldCount >= 3) {
+      return res.status(400).json({
+        status: "error",
+        message: "Hold limit reached: you can only have up to 3 active holds",
+      });
+    }
+    //cannot place a hold if already has 5 active borrows (borrowed+overdue)
+    const activeBorrowCount = await countActiveBorrowsByUserModel(userId);
+    if (activeBorrowCount >= 5) {
+      return res.status(400).json({
+        status: "error",
+        message: "Cannot place hold: you already have 5 active borrows",
+      });
+    }
+
+    // reserve quantity (atomic, not borrowed yet)
     const reserved = await reserveBookCopyForHoldModel(bookId);
     if (!reserved) {
       return res
@@ -131,9 +156,6 @@ export const getMyHoldsController = async (req, res, next) => {
     next(error);
   }
 };
-
-// MEMBER: cancel my hold (returns book quantity)
-import { releaseBookCopyModel } from "../models/Book/BookModel.js";
 
 export const cancelMyHoldController = async (req, res, next) => {
   try {
@@ -226,7 +248,7 @@ export const fulfillHoldToBorrowController = async (req, res, next) => {
         .status(400)
         .json({ status: "error", message: "Hold ID is required" });
 
-    // we need the hold info, easiest: populate via HoldSchema directly
+    // we need the hold info, easier to populate via HoldSchema directly
     const Hold = (await import("../models/Hold/HoldSchema.js")).default;
     const hold = await Hold.findById(holdId);
     if (!hold)
@@ -243,6 +265,25 @@ export const fulfillHoldToBorrowController = async (req, res, next) => {
       return res
         .status(400)
         .json({ status: "error", message: "Hold is expired" });
+    }
+
+    //enforce rules anyway of physical book holding
+    const hasOverdue = await hasOverdueBorrowByUserModel(hold.userId);
+    if (hasOverdue) {
+      return res.status(400).json({
+        status: "error",
+        message: "Cannot fulfill hold: user has overdue borrows",
+      });
+    }
+
+    //cannot have more than 5 active borrows (borrowed+overdue)
+    const activeCount = await countActiveBorrowsByUserModel(hold.userId);
+    if (activeCount >= 5) {
+      return res.status(400).json({
+        status: "error",
+        message:
+          "Cannot fulfill hold: user reached the maximum of 5 active borrows",
+      });
     }
 
     // Create borrow WITHOUT reserving again (hold already reserved the copy before)

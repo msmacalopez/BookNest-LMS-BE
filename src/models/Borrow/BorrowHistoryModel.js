@@ -109,3 +109,20 @@ export const autoReturnBorrowModel = (borrowId) => {
     { new: true }
   );
 };
+
+// count active borrows = borrowed + overdue
+export const countActiveBorrowsByUserModel = (userId) => {
+  return BorrowHistorySchema.countDocuments({
+    userId,
+    status: { $in: ["borrowed", "overdue"] },
+  });
+};
+
+// does user have any overdue?
+export const hasOverdueBorrowByUserModel = async (userId) => {
+  const exists = await BorrowHistorySchema.exists({
+    userId,
+    status: "overdue",
+  });
+  return !!exists;
+};

@@ -71,3 +71,7 @@ export const getAllHoldsModel = async (
   ]);
   return { items, total };
 };
+
+export const countActiveHoldsByUserModel = (userId) => {
+  return HoldSchema.countDocuments({ userId, status: "active" });
+};

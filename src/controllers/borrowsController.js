@@ -15,7 +15,10 @@ import {
   getMyBorrowHistoryModel,
   getAllBorrowsModel,
   adminReturnBorrowModel,
+  countActiveBorrowsByUserModel,
+  hasOverdueBorrowByUserModel,
 } from "../models/Borrow/BorrowHistoryModel.js";
+
 import { getUserByIdModel } from "../models/User/UserModel.js";
 
 // create borrow for himself
@@ -136,6 +139,36 @@ export const createBorrowForUserController = async (req, res, next) => {
         status: "error",
         message: "User is not active and cannot borrow books",
       });
+    }
+
+    // 4a) Get book first (so we know if physical)
+    const book = await getBookByIdModel(bookId);
+    if (!book) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "Book not found" });
+    }
+
+    // If PHYSICAL book: apply rules
+    if (book.typeEdition !== "Ebook") {
+      // Rule: cannot borrow physical if has any overdue
+      const hasOverdue = await hasOverdueBorrowByUserModel(userId);
+      if (hasOverdue) {
+        return res.status(400).json({
+          status: "error",
+          message: "Cannot borrow physical books: user has overdue borrows",
+        });
+      }
+
+      // Rule: cannot have > 5 active borrows (borrowed+overdue)
+      const activeCount = await countActiveBorrowsByUserModel(userId);
+      if (activeCount >= 5) {
+        return res.status(400).json({
+          status: "error",
+          message:
+            "Borrow limit reached: user can only have up to 5 active borrows",
+        });
+      }
     }
 
     // 4. Try to reserve a copy of the book

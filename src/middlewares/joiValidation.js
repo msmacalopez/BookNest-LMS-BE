@@ -343,3 +343,40 @@ export const bulkDeleteUsersValidation = (req, res, next) => {
   }
   next();
 };
+
+//////////////////////Hold validators
+// member creates a hold (body must be empty)
+export const createHoldValidation = (req, res, next) => {
+  const schema = Joi.object({}).max(0).unknown(false);
+
+  return joiValidator({ req, res, next, schema });
+};
+
+// member cancels a hold (body must be empty)
+export const cancelHoldValidation = (req, res, next) => {
+  const schema = Joi.object({}).max(0).unknown(false);
+
+  return joiValidator({ req, res, next, schema });
+};
+
+// admin fulfills a hold (body must be empty)
+export const fulfillHoldValidation = (req, res, next) => {
+  const schema = Joi.object({}).max(0).unknown(false);
+
+  return joiValidator({ req, res, next, schema });
+};
+
+//bookId/HoldId must be valid ObjectId
+export const validateObjectIdParam = (paramName) => (req, res, next) => {
+  const schema = Joi.object({
+    [paramName]: Joi.string()
+      .regex(/^[0-9a-fA-F]{24}$/)
+      .required(),
+  });
+
+  const { error } = schema.validate(req.params);
+  if (error) {
+    return res.status(400).json({ status: "error", message: "Invalid ID" });
+  }
+  next();
+};
