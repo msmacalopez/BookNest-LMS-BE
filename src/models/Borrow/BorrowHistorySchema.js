@@ -1,10 +1,11 @@
+//BorrowHistorySchema.js
 import mongoose from "mongoose";
 
 const BorrowHistorySchema = new mongoose.Schema(
   {
     status: {
       type: String,
-      enum: ["borrowed", "returned", "overdue", "reviewed"],
+      enum: ["onhold", "borrowed", "returned", "overdue", "reviewed"],
       default: "borrowed",
     },
     reviewId: {

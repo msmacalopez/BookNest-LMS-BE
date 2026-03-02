@@ -8,6 +8,7 @@
 @bookEP = {{apiEP}}/books
 @borrowsEP = {{apiEP}}/borrows
 @reviewsEP = {{apiEP}}/reviews
+@holdsEP = {{apiEP}}/holds
 
 @sessionJWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAYS5jb20iLCJpYXQiOjE3NzE1NTY2MTEsImV4cCI6MTc3MTY0MzAxMX0.GFHqTqFUTrVNcIjRqSMjTihfHW8mVdAQHXLq-yjS-ZQ
 @renewJWT=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAYS5jb20iLCJpYXQiOjE3NjkzNTU4MzMsImV4cCI6MTc3MTk0NzgzM30.V9ichS8M7EfNN7QFPhvO7EACjzWTI-DymdbBzd-e6K0
@@ -267,3 +268,29 @@ GET {{reviewsEP}}/book/696f7eac6cf0858227674a1f
 GET {{reviewsEP}}/myreviews
 Authorization: {{sessionJWT}}
 
+########################################################## HOLDS ########################
+### Create my hold (any)
+# POST {{holdsEP}}/{{bookId}}
+POST {{holdsEP}}/696f7eac6cf0858227674a1f
+Authorization: {{sessionJWT}}
+Content-Type: application/json
+
+### Get My Holds (any)
+GET {{holdsEP}}/myholds?page=1&limit=10
+Authorization: {{sessionJWT}}
+
+### Cancel My Hold (ANY)
+# PATCH {{holdsEP}}/cancel/{{holdId}}
+PATCH {{holdsEP}}/cancel/69763c1ecb330ed0faaa68c2
+Authorization:{{sessionJWT}}
+Content-Type: application/json
+
+### Get All Holds (Admin)
+GET {{holdsEP}}/allholds?page=1&limit=10&q=&status=
+Authorization: {{sessionJWT}}
+
+### Fulfill Hold -> Create Borrow (Admin)
+# POST {{sessionJWT}}/fulfill/{{holdId}}
+POST {{holdsEP}}/fulfill/69763c1ecb330ed0faaa68c2
+Authorization: {{sessionJWT}}
+Content-Type: application/json

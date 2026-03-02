@@ -1,8 +1,11 @@
+//autoReturnEbooks.js
 import cron from "node-cron";
+//Ebooks Autoreturn
 import {
   getExpiredEbookBorrowsModel,
   autoReturnBorrowModel,
 } from "../models/Borrow/BorrowHistoryModel.js";
+
 import { releaseBookCopyModel } from "../models/Book/BookModel.js";
 
 export const startAutoReturnEbooksJob = () => {
@@ -10,7 +13,7 @@ export const startAutoReturnEbooksJob = () => {
   //TODO
   //PRODUCTION: "0 3 * * *"
   //TESTING: "* * * * *"
-  cron.schedule("* * * * *", async () => {
+  cron.schedule("0 3 * * *", async () => {
     try {
       const expired = await getExpiredEbookBorrowsModel();
 

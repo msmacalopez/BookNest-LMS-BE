@@ -1,3 +1,5 @@
+//BorrowHistoryModel.js
+
 import BorrowHistorySchema from "./BorrowHistorySchema.js";
 
 // Create a new borrow history record

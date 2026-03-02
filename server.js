@@ -1,3 +1,4 @@
+//server.js
 import express from "express";
 import cors from "cors";
 import { connectMongoDB } from "./src/config/mongoDB.js";
@@ -11,9 +12,11 @@ import superAdminRoute from "./src/routes/superAdminRoute.js";
 import bookRoute from "./src/routes/bookRoute.js";
 import borrowsRoute from "./src/routes/borrowsRoute.js";
 import reviewRoute from "./src/routes/reviewRoute.js";
+import holdRoute from "./src/routes/holdRoute.js";
 
-//auto Return Job
+//auto Return Jobs
 import { startAutoReturnEbooksJob } from "./src/jobs/autoReturnEbooks.js";
+import { startExpireHoldsJob } from "./src/jobs/expireHolds.js";
 
 // Create an Express application - server instance
 const app = express();
@@ -50,6 +53,9 @@ app.use("/api/v1/borrows", borrowsRoute);
 //Review Routes
 app.use("/api/v1/reviews", reviewRoute);
 
+//Hold Routes
+app.use("/api/v1/holds", holdRoute);
+
 // error validator
 app.use((error, req, res, next) => {
   console.log("Error Validator:", error);
@@ -75,3 +81,4 @@ connectMongoDB()
 
 //// after mongoose connects -> RUN AUTORETURN JOB
 startAutoReturnEbooksJob();
+startExpireHoldsJob();
