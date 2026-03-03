@@ -7,6 +7,7 @@ import {
   reserveBookCopyForHoldModel,
   reserveBookCopyModel,
   releaseBookCopyModel,
+  updateBookModel,
 } from "../models/Book/BookModel.js";
 
 import {
@@ -20,9 +21,9 @@ import {
 } from "../models/Hold/HoldModel.js";
 
 import {
-  countActiveBorrowsByUserModel,
+  countActivePhysicalByUserModel,
+  countOverduePhysicalByUserModel,
   createBorrowHistoryModel,
-  hasOverdueBorrowByUserModel,
 } from "../models/Borrow/BorrowHistoryModel.js";
 
 // 2 days hold
@@ -43,6 +44,13 @@ export const createHoldController = async (req, res, next) => {
       return res
         .status(404)
         .json({ status: "error", message: "User not found" });
+
+    if (user.status !== "active") {
+      return res.status(403).json({
+        status: "error",
+        message: "Your account is not active. You cannot place holds.",
+      });
+    }
 
     const { bookId } = req.params;
     if (!bookId)
@@ -87,12 +95,13 @@ export const createHoldController = async (req, res, next) => {
         message: "Hold limit reached: you can only have up to 3 active holds",
       });
     }
-    //cannot place a hold if already has 5 active borrows (borrowed+overdue)
-    const activeBorrowCount = await countActiveBorrowsByUserModel(userId);
-    if (activeBorrowCount >= 5) {
+    //cannot place a hold if already has 5 active borrows (borrowed+overdue) physical only
+    const activePhysical = await countActivePhysicalByUserModel(userId);
+    if (activePhysical >= 5) {
       return res.status(400).json({
         status: "error",
-        message: "Cannot place hold: you already have 5 active borrows",
+        message:
+          "Cannot place hold: you already have 5 active physical borrows",
       });
     }
 
@@ -267,22 +276,34 @@ export const fulfillHoldToBorrowController = async (req, res, next) => {
         .json({ status: "error", message: "Hold is expired" });
     }
 
+    //user is active
+    const user = await getUserByIdModel(hold.userId);
+    if (!user)
+      return res
+        .status(404)
+        .json({ status: "error", message: "User not found" });
+
+    if (user.status !== "active") {
+      return res.status(403).json({
+        status: "error",
+        message: "User is not active and cannot borrow books",
+      });
+    }
     //enforce rules anyway of physical book holding
-    const hasOverdue = await hasOverdueBorrowByUserModel(hold.userId);
-    if (hasOverdue) {
+    const overduePhysical = await countOverduePhysicalByUserModel(hold.userId);
+    if (overduePhysical > 0) {
       return res.status(400).json({
         status: "error",
-        message: "Cannot fulfill hold: user has overdue borrows",
+        message: "Cannot fulfill hold: user has overdue physical borrows",
       });
     }
 
-    //cannot have more than 5 active borrows (borrowed+overdue)
-    const activeCount = await countActiveBorrowsByUserModel(hold.userId);
-    if (activeCount >= 5) {
+    const activePhysical = await countActivePhysicalByUserModel(hold.userId);
+    if (activePhysical >= 5) {
       return res.status(400).json({
         status: "error",
         message:
-          "Cannot fulfill hold: user reached the maximum of 5 active borrows",
+          "Cannot fulfill hold: user already has 5 active physical borrows",
       });
     }
 
@@ -303,6 +324,9 @@ export const fulfillHoldToBorrowController = async (req, res, next) => {
       memberEmail: hold.memberEmail,
       createdByEmail: adminUser.email,
     });
+
+    //increment times borrowed for popular books
+    await updateBookModel(hold.bookId, { $inc: { timesBorrowed: 1 } });
 
     // mark hold as fulfilled and attach borrowId
     const fulfilled = await fulfillHoldModel(

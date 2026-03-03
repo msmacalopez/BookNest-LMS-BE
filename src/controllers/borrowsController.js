@@ -15,8 +15,9 @@ import {
   getMyBorrowHistoryModel,
   getAllBorrowsModel,
   adminReturnBorrowModel,
-  countActiveBorrowsByUserModel,
-  hasOverdueBorrowByUserModel,
+  countActiveEbooksByUserModel,
+  countOverduePhysicalByUserModel,
+  countActivePhysicalByUserModel,
 } from "../models/Borrow/BorrowHistoryModel.js";
 
 import { getUserByIdModel } from "../models/User/UserModel.js";
@@ -40,6 +41,13 @@ export const createMyBorrowController = async (req, res, next) => {
         .json({ status: "error", message: "User not found" });
     }
 
+    if (user.status !== "active") {
+      return res.status(403).json({
+        status: "error",
+        message: "Your account is not active. You cannot borrow books.",
+      });
+    }
+
     // 2. bookId from params
     const { bookId } = req.params;
     if (!bookId) {
@@ -49,21 +57,36 @@ export const createMyBorrowController = async (req, res, next) => {
       });
     }
     // ReviewId is not needed
+    //3A fetch book to check type
+    const book = await getBookByIdModel(bookId);
+    if (!book) {
+      return res
+        .status(404)
+        .json({ status: "error", message: "Book not found" });
+    }
 
-    // 3. Try to reserve Book
+    if (book.typeEdition !== "Ebook") {
+      return res.status(403).json({
+        status: "error",
+        message: "Members can only borrow Ebook editions",
+      });
+    }
+
+    //3A) max 5 active ebooks at once
+    const activeEbooks = await countActiveEbooksByUserModel(userId);
+    if (activeEbooks >= 5) {
+      return res.status(400).json({
+        status: "error",
+        message:
+          "You already have 5 active Ebooks. Please return/wait for auto-return before borrowing more.",
+      });
+    }
+    // 3. Try to reserve Book (decrement)
     const reservedBook = await reserveBookCopyModel(bookId);
     if (!reservedBook) {
       return res.status(400).json({
         status: "error",
         message: "No available copies for this volume",
-      });
-    }
-
-    // member can only borrow Ebook
-    if (reservedBook.typeEdition !== "Ebook") {
-      return res.status(403).json({
-        status: "error",
-        message: "Members can only borrow Ebook editions",
       });
     }
 
@@ -149,24 +172,32 @@ export const createBorrowForUserController = async (req, res, next) => {
         .json({ status: "error", message: "Book not found" });
     }
 
-    // If PHYSICAL book: apply rules
-    if (book.typeEdition !== "Ebook") {
-      // Rule: cannot borrow physical if has any overdue
-      const hasOverdue = await hasOverdueBorrowByUserModel(userId);
-      if (hasOverdue) {
+    //For Ebooks only
+    if (book.typeEdition === "Ebook") {
+      // Ebook cap only (no overdue punishment)
+      const activeEbooks = await countActiveEbooksByUserModel(userId);
+      if (activeEbooks >= 5) {
         return res.status(400).json({
           status: "error",
-          message: "Cannot borrow physical books: user has overdue borrows",
+          message: "User already has 5 active Ebooks and cannot borrow more.",
+        });
+      }
+    }
+    //For Physical Books only
+    else {
+      const overduePhysical = await countOverduePhysicalByUserModel(userId);
+      if (overduePhysical > 0) {
+        return res.status(400).json({
+          status: "error",
+          message: "User has overdue physical books and cannot borrow more.",
         });
       }
 
-      // Rule: cannot have > 5 active borrows (borrowed+overdue)
-      const activeCount = await countActiveBorrowsByUserModel(userId);
-      if (activeCount >= 5) {
+      const activePhysical = await countActivePhysicalByUserModel(userId);
+      if (activePhysical >= 5) {
         return res.status(400).json({
           status: "error",
-          message:
-            "Borrow limit reached: user can only have up to 5 active borrows",
+          message: "User already has 5 active physical borrows.",
         });
       }
     }

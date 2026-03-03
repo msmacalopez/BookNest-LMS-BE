@@ -10,11 +10,11 @@ const config = {
   },
   jwt: {
     secret: process.env.JWT_SECRET || "secret",
-    expires: process.env.JWT_EXPIRES || "1d",
+    expires: process.env.JWT_EXPIRES || "1m",
   },
   renewJwt: {
     secret: process.env.JWT_RENEW_SECRET || "renew-secret",
-    expires: process.env.JWT_RENEW_EXPIRES || "1d",
+    expires: process.env.JWT_RENEW_EXPIRES || "1m",
   },
 };
 

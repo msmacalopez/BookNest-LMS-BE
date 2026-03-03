@@ -119,10 +119,45 @@ export const countActiveBorrowsByUserModel = (userId) => {
 };
 
 // does user have any overdue?
-export const hasOverdueBorrowByUserModel = async (userId) => {
+// export const hasOverdueBorrowByUserModel = async (userId) => {
+//   const exists = await BorrowHistorySchema.exists({
+//     userId,
+//     status: "overdue",
+//   });
+//   return !!exists;
+// };
+export const hasOverduePhysicalByUserModel = async (userId) => {
   const exists = await BorrowHistorySchema.exists({
     userId,
     status: "overdue",
+    typeEdition: { $ne: "Ebook" },
   });
   return !!exists;
+};
+
+//Count overdue PHYSICAL borrows only = Not OVERDUE ALLOWED
+export const countOverduePhysicalByUserModel = (userId) => {
+  return BorrowHistorySchema.countDocuments({
+    userId,
+    status: "overdue",
+    typeEdition: { $ne: "Ebook" }, //not Ebook
+  });
+};
+
+//Count active EBOOK borrows (borrowed status only) => max 5
+export const countActiveEbooksByUserModel = (userId) => {
+  return BorrowHistorySchema.countDocuments({
+    userId,
+    typeEdition: "Ebook",
+    status: { $in: ["borrowed"] },
+  });
+};
+
+//Count active PHYSICAL borrows =>Max=5
+export const countActivePhysicalByUserModel = (userId) => {
+  return BorrowHistorySchema.countDocuments({
+    userId,
+    typeEdition: { $ne: "Ebook" },
+    status: { $in: ["borrowed", "overdue"] },
+  });
 };
