@@ -96,7 +96,11 @@ export const getAllPublicBooksController = async (req, res, next) => {
   try {
     //get all books with status "active"
     const activeBooks = await getAllBooksModel({ status: "active" });
-    const activeReviews = await getAllReviewsModel({ status: "active" });
+    //reviews are an array, we need to filter them by bookId to assign them to the correct book
+    const { items: activeReviews } = await getAllReviewsModel(
+      { status: "active" },
+      { skip: 0, limit: 100000 } //big number to get them all
+    );
 
     const booksWithReviews = activeBooks.map((item) => {
       return {

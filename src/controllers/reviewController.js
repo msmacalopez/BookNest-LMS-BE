@@ -12,6 +12,8 @@ import {
   updateBorrowHistoryModel,
 } from "../models/Borrow/BorrowHistoryModel.js";
 
+import { recalcAverageRatingForBookModel } from "../models/Book/BookModel.js";
+
 //////////////////////public
 //to display in Book -> only active reviews
 export const getReviewsByBookController = async (req, res, next) => {
@@ -255,6 +257,9 @@ export const updateReviewController = async (req, res, next) => {
         message: "Review not found",
       });
     }
+
+    // 3B) Update the average rating
+    await recalcAverageRatingForBookModel(updatedReview.bookId);
 
     //4. response to front-end
     return res.status(200).json({

@@ -1,5 +1,8 @@
 //BookModel.js
 import BookSchema from "./BookSchema.js";
+//whn update the average rating, we need :
+import ReviewSchema from "../Review/ReviewSchema.js";
+import mongoose from "mongoose";
 
 // create a book
 export const addBookModel = (obj) => {
@@ -140,3 +143,41 @@ export const reserveBookCopyForHoldModel = async (bookId) => {
 //     { new: true }
 //   );
 // };
+
+//Update Average Rating
+// Recalculate whn review turns ACTIVE
+export const recalcAverageRatingForBookModel = async (bookId) => {
+  const _bookId = new mongoose.Types.ObjectId(String(bookId));
+
+  const stats = await ReviewSchema.aggregate([
+    {
+      $match: {
+        bookId: _bookId,
+        status: "active",
+      },
+    },
+    {
+      $group: {
+        _id: "$bookId",
+        avg: { $avg: "$rating" },
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  const avg = stats?.[0]?.avg ?? 0;
+  const count = stats?.[0]?.count ?? 0;
+
+  //ONE decimal
+  const rounded = Number(avg.toFixed(1));
+
+  await BookSchema.findByIdAndUpdate(_bookId, {
+    averageRating: rounded,
+    reviewsCount: count,
+  });
+
+  return {
+    averageRating: rounded,
+    reviewsCount: count,
+  };
+};
