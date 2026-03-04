@@ -43,7 +43,7 @@ export const searchPublicBooksController = async (req, res, next) => {
     const page = parseInt(req.query.page || "1", 10);
 
     //limit, skip, sort;
-    const limit = parseInt(req.query.limit || "10", 10); // items show per page
+    const limit = parseInt(req.query.limit || "12", 10); // items show per page
     const skip = (page - 1) * limit; //how may items skip at the beggining
     //page = which page user wants
     //limit = how many items per page
@@ -191,7 +191,7 @@ export const searchAllBooksController = async (req, res, next) => {
     }
 
     const page = parseInt(req.query.page || "1", 10);
-    const limit = parseInt(req.query.limit || "10", 10);
+    const limit = parseInt(req.query.limit || "12", 10);
     const skip = (page - 1) * limit;
 
     const sortBy = req.query.sortBy || "createdAt";
@@ -233,7 +233,7 @@ export const getAllBooksController = async (req, res, next) => {
     }
 
     const page = parseInt(req.query.page || "1", 10);
-    const limit = parseInt(req.query.limit || "10", 10);
+    const limit = parseInt(req.query.limit || "12", 10);
     const skip = (page - 1) * limit;
 
     const sortBy = req.query.sortBy || "createdAt";

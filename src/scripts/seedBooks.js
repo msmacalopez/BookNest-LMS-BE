@@ -33,3 +33,4 @@ run();
 
 // RUN in comm line:
 //npm run seed:books
+//yarn seed:books
