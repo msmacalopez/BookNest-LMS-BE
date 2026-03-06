@@ -71,3 +71,11 @@ export const getActiveReviewsByBookIdModel = (bookId) => {
     .sort({ createdAt: -1 })
     .populate("userId", "fName lName"); // who wrote the review
 };
+
+// MEMBER DASHBOARD
+export const countActiveReviewsByUserModel = (userId) => {
+  return ReviewSchema.countDocuments({
+    userId,
+    status: "active",
+  });
+};

@@ -1,5 +1,5 @@
 //BorrowHistoryModel.js
-
+import mongoose from "mongoose";
 import BorrowHistorySchema from "./BorrowHistorySchema.js";
 
 // Create a new borrow history record
@@ -160,4 +160,134 @@ export const countActivePhysicalByUserModel = (userId) => {
     typeEdition: { $ne: "Ebook" },
     status: { $in: ["borrowed", "overdue"] },
   });
+};
+
+// MEMBER DASHBOARD
+
+// total borrow records for a member
+export const countTotalBorrowsByUserModel = (userId) => {
+  return BorrowHistorySchema.countDocuments({ userId });
+};
+
+// total returned borrow records for a member
+export const countReturnedBorrowsByUserModel = (userId) => {
+  return BorrowHistorySchema.countDocuments({
+    userId,
+    returnDate: { $ne: null },
+  });
+};
+
+// next due active borrow for a member
+export const getNextDueBorrowByUserModel = (userId) => {
+  return BorrowHistorySchema.findOne({
+    userId,
+    status: { $in: ["borrowed", "overdue"] },
+    returnDate: null,
+  })
+    .sort({ dueDate: 1 })
+    .populate("bookId", "title author coverImageUrl genre");
+};
+
+// borrowing trends by member
+export const getBorrowingTrendsByUserModel = async (userId, start, end) => {
+  const borrowedAgg = await BorrowHistorySchema.aggregate([
+    {
+      $match: {
+        userId: new mongoose.Types.ObjectId(String(userId)),
+        borrowDate: { $gte: start, $lte: end },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$borrowDate",
+          },
+        },
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ]);
+
+  const returnedAgg = await BorrowHistorySchema.aggregate([
+    {
+      $match: {
+        userId: new mongoose.Types.ObjectId(String(userId)),
+        returnDate: { $ne: null, $gte: start, $lte: end },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$returnDate",
+          },
+        },
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { _id: 1 } },
+  ]);
+
+  return { borrowedAgg, returnedAgg };
+};
+
+// favorite genre for a member
+export const getFavoriteGenreByUserModel = async (userId) => {
+  const result = await BorrowHistorySchema.aggregate([
+    {
+      $match: {
+        userId: new mongoose.Types.ObjectId(String(userId)),
+      },
+    },
+    {
+      $lookup: {
+        from: "books",
+        localField: "bookId",
+        foreignField: "_id",
+        as: "book",
+      },
+    },
+    { $unwind: "$book" },
+    {
+      $group: {
+        _id: "$book.genre",
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { count: -1, _id: 1 } },
+    { $limit: 1 },
+  ]);
+
+  return result?.[0] || null;
+};
+
+// genre distribution for a member
+export const getGenreDistributionByUserModel = async (userId) => {
+  return BorrowHistorySchema.aggregate([
+    {
+      $match: {
+        userId: new mongoose.Types.ObjectId(String(userId)),
+      },
+    },
+    {
+      $lookup: {
+        from: "books",
+        localField: "bookId",
+        foreignField: "_id",
+        as: "book",
+      },
+    },
+    { $unwind: "$book" },
+    {
+      $group: {
+        _id: "$book.genre",
+        value: { $sum: 1 },
+      },
+    },
+    { $sort: { value: -1, _id: 1 } },
+  ]);
 };

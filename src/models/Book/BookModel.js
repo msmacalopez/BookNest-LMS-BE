@@ -189,3 +189,36 @@ export const getBookByIsbnModel = (isbn) => {
     isbn: new RegExp(`^${q}$`, "i"),
   });
 };
+
+// MEMBER DASHBOARD
+
+export const getRecommendedBooksByGenresModel = (
+  genres = [],
+  excludedBookIds = [],
+  limit = 5
+) => {
+  const filter = {
+    status: "active",
+    _id: { $nin: excludedBookIds },
+  };
+
+  if (genres.length) {
+    filter.genre = { $in: genres };
+  }
+
+  return BookSchema.find(filter)
+    .sort({ timesBorrowed: -1, averageRating: -1, createdAt: -1 })
+    .limit(limit)
+    .select(
+      "title author genre typeEdition coverImageUrl timesBorrowed averageRating quantityAvailable status"
+    );
+};
+
+export const getTopPopularActiveBooksModel = (limit = 5) => {
+  return BookSchema.find({ status: "active" })
+    .sort({ timesBorrowed: -1, averageRating: -1, createdAt: -1 })
+    .limit(limit)
+    .select(
+      "title author genre typeEdition coverImageUrl timesBorrowed averageRating quantityAvailable status"
+    );
+};
