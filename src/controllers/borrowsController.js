@@ -19,6 +19,7 @@ import {
   countActiveEbooksByUserModel,
   countOverduePhysicalByUserModel,
   countActivePhysicalByUserModel,
+  hasActiveBorrowedBookByUserModel,
 } from "../models/Borrow/BorrowHistoryModel.js";
 
 import {
@@ -67,6 +68,18 @@ export const createMyBorrowController = async (req, res, next) => {
       return res
         .status(404)
         .json({ status: "error", message: "Book not found" });
+    }
+
+    // check book already borrowed by user (active borrow with same bookId)
+    const alreadyBorrowed = await hasActiveBorrowedBookByUserModel(
+      userId,
+      bookId
+    );
+    if (alreadyBorrowed) {
+      return res.status(400).json({
+        status: "error",
+        message: "You already have this book borrowed.",
+      });
     }
 
     if (book.typeEdition !== "Ebook") {
@@ -174,6 +187,17 @@ export const createBorrowForUserController = async (req, res, next) => {
       return res
         .status(404)
         .json({ status: "error", message: "Book not found" });
+    }
+    // check if user already borrow that book (active borrow with same bookId)
+    const alreadyBorrowed = await hasActiveBorrowedBookByUserModel(
+      userId,
+      bookId
+    );
+    if (alreadyBorrowed) {
+      return res.status(400).json({
+        status: "error",
+        message: "User already has this book borrowed.",
+      });
     }
 
     //For Ebooks only
@@ -444,6 +468,19 @@ export const createBorrowByQueryController = async (req, res, next) => {
       return res.status(404).json({
         status: "error",
         message: "Book not found with that ISBN",
+      });
+    }
+
+    //check if user already borrow that book (active borrow with same bookId)
+    const alreadyBorrowed = await hasActiveBorrowedBookByUserModel(
+      user._id,
+      book._id
+    );
+
+    if (alreadyBorrowed) {
+      return res.status(400).json({
+        status: "error",
+        message: "User already has this book borrowed.",
       });
     }
 

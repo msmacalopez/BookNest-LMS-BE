@@ -291,3 +291,13 @@ export const getGenreDistributionByUserModel = async (userId) => {
     { $sort: { value: -1, _id: 1 } },
   ]);
 };
+
+export const hasActiveBorrowedBookByUserModel = async (userId, bookId) => {
+  const exists = await BorrowHistorySchema.exists({
+    userId,
+    bookId,
+    status: "borrowed",
+  });
+
+  return !!exists;
+};

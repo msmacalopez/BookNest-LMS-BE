@@ -24,6 +24,7 @@ import {
   countActivePhysicalByUserModel,
   countOverduePhysicalByUserModel,
   createBorrowHistoryModel,
+  hasActiveBorrowedBookByUserModel,
 } from "../models/Borrow/BorrowHistoryModel.js";
 
 // 2 days hold
@@ -72,6 +73,19 @@ export const createHoldController = async (req, res, next) => {
       return res
         .status(404)
         .json({ status: "error", message: "Book not found" });
+
+    // prevent hold if book is an active "borrowed"
+    const alreadyBorrowed = await hasActiveBorrowedBookByUserModel(
+      userId,
+      bookId
+    );
+    if (alreadyBorrowed) {
+      return res.status(400).json({
+        status: "error",
+        message:
+          "You already have this book borrowed, so you cannot place a hold for it.",
+      });
+    }
 
     // hold only for physical copies (not Ebook)
     if (book.typeEdition === "Ebook") {
@@ -304,6 +318,19 @@ export const fulfillHoldToBorrowController = async (req, res, next) => {
         status: "error",
         message:
           "Cannot fulfill hold: user already has 5 active physical borrows",
+      });
+    }
+
+    // prevent brrowing same book
+    const alreadyBorrowed = await hasActiveBorrowedBookByUserModel(
+      hold.userId,
+      hold.bookId
+    );
+
+    if (alreadyBorrowed) {
+      return res.status(400).json({
+        status: "error",
+        message: "Cannot fulfill hold: user already has this book borrowed",
       });
     }
 

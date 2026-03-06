@@ -7,6 +7,32 @@ const EMAIL_REQ = STR_REQUIRED.email({ minDomainSegments: 2 });
 const ISTRUE = Joi.boolean();
 const NUM = Joi.number();
 
+const PHONE = Joi.string()
+  .pattern(/^04\d{8}$/)
+  .messages({
+    "string.pattern.base":
+      "Phone number must start with 04 and contain exactly 10 digits",
+  });
+
+const PHONE_REQUIRED = PHONE.required().messages({
+  "any.required": "Phone number is required",
+});
+
+const PASSWORD = Joi.string()
+  .min(8)
+  .max(128)
+  .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).+$/)
+  .messages({
+    "string.empty": "Password is required",
+    "string.min": "Password must be at least 8 characters long",
+    "string.max": "Password must be less than 128 characters",
+    "string.pattern.base":
+      "Password must include at least 1 uppercase letter, 1 lowercase letter, 1 number, and 1 special character",
+    "any.required": "Password is required",
+  });
+
+const PASS_REQUIRED = PASSWORD.required();
+
 const joiValidator = ({ req, res, next, schema }) => {
   try {
     const { error } = schema.validate(req.body || {});
@@ -36,8 +62,8 @@ export const newMemberValidation = (req, res, next) => {
     lName: STR_REQUIRED,
     address: STR_REQUIRED,
     email: EMAIL_REQ,
-    phone: STR_REQUIRED,
-    password: STR_REQUIRED,
+    phone: PHONE_REQUIRED,
+    password: PASS_REQUIRED,
   });
   return joiValidator({ req, res, next, schema });
 };
@@ -56,8 +82,8 @@ export const updateMyMemberValidation = (req, res, next) => {
     lName: STR,
     address: STR,
     email: EMAIL,
-    phone: STR,
-    password: STR,
+    phone: PHONE,
+    password: PASSWORD,
   });
   return joiValidator({ req, res, next, schema });
 };
@@ -79,8 +105,8 @@ export const newAdminValidation = (req, res, next) => {
     fName: STR_REQUIRED,
     lName: STR_REQUIRED,
     email: EMAIL_REQ,
-    phone: STR_REQUIRED,
-    password: STR_REQUIRED,
+    phone: PHONE_REQUIRED,
+    password: PASS_REQUIRED,
     role: STR_REQUIRED.valid("admin"),
   });
   return joiValidator({ req, res, next, schema });
@@ -96,7 +122,7 @@ export const updateLibrarianValidation = (req, res, next) => {
     fName: STR,
     lName: STR,
     email: EMAIL,
-    phone: STR,
+    phone: PHONE,
     role: STR.valid("superadmin", "admin", "member"),
     status: STR.valid("active", "inactive", "suspended", "deactivated"),
   });
@@ -266,7 +292,7 @@ export const updateReviewToActive = (req, res, next) => {
 export const changePasswordValidation = (req, res, next) => {
   const schema = Joi.object({
     currentPassword: Joi.string().required(),
-    newPassword: Joi.string().min(6).required(),
+    newPassword: PASS_REQUIRED,
     confirmNewPassword: Joi.string()
       .valid(Joi.ref("newPassword"))
       .required()
@@ -294,8 +320,8 @@ export const createUserBySuperAdminValidation = (req, res, next) => {
     fName: Joi.string().required(),
     lName: Joi.string().required(),
     address: Joi.string().required(),
-    email: Joi.string().email({ minDomainSegments: 2 }).required(),
-    phone: Joi.string().required(),
+    email: EMAIL,
+    phone: PHONE,
     password: Joi.string().min(6).required(),
   }).unknown(false);
 
@@ -315,11 +341,11 @@ export const updateUserBySuperAdminValidation = (req, res, next) => {
       "suspended",
       "deactivated"
     ),
-    fName: Joi.string(),
-    lName: Joi.string(),
-    address: Joi.string(),
-    email: Joi.string().email({ minDomainSegments: 2 }),
-    phone: Joi.string(),
+    fName: STR,
+    lName: STR,
+    address: STR,
+    email: EMAIL,
+    phone: PHONE,
   }).unknown(false);
 
   const { error } = schema.validate(req.body);
