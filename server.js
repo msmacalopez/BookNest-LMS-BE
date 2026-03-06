@@ -19,6 +19,9 @@ import statsRoute from "./src/routes/statsRoute.js";
 import { startAutoReturnEbooksJob } from "./src/jobs/autoReturnEbooks.js";
 import { startExpireHoldsJob } from "./src/jobs/expireHolds.js";
 
+//fileUpload route
+import uploadRoute from "./src/routes/uploadRoute.js";
+
 // Create an Express application - server instance
 const app = express();
 const PORT = config.port;
@@ -59,6 +62,9 @@ app.use("/api/v1/holds", holdRoute);
 
 //Stats Routes
 app.use("/api/v1/stats", statsRoute);
+
+//File Upload Route
+app.use("/api/v1/upload", uploadRoute);
 
 // error validator
 app.use((error, req, res, next) => {

@@ -16,6 +16,11 @@ const config = {
     secret: process.env.JWT_RENEW_SECRET || "renew-secret",
     expires: process.env.JWT_RENEW_EXPIRES || "1m",
   },
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    apiSecret: process.env.CLOUDINARY_API_SECRET,
+  },
 };
 
 export default config;
