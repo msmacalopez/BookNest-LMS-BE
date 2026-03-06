@@ -15,21 +15,22 @@ import { auth, isActiveUser, isAdmin } from "../middlewares/authMiddleware.js";
 import {
   adminReturnBorrow,
   createAnyBorrow,
+  createBorrowByQueryValidation,
 } from "../middlewares/joiValidation.js";
 
 const router = express.Router();
 
-//by member -> only E-books
 router.post(
-  "/:bookId",
+  "/admin/manual",
   auth,
+  isAdmin,
   isActiveUser,
-  createAnyBorrow,
-  createMyBorrowController
+  createBorrowByQueryValidation,
+  createBorrowByQueryController
 );
-// -> add authMiddleware, createBorrowValidator (Joi)
 
 //by admin -> any book
+//> add AuthMiddleware, isAdmin, createBorrowValidator(Joi),
 router.post(
   "/:userId/:bookId",
   auth,
@@ -38,7 +39,6 @@ router.post(
   createAnyBorrow,
   createBorrowForUserController
 );
-//> add AuthMiddleware, isAdmin, createBorrowValidator(Joi),
 
 router.get("/myborrows", auth, getMyBorrowsController);
 // -> add authMiddleware
@@ -56,21 +56,14 @@ router.patch(
 );
 // -> add authMiddleware, isAdminMiddleware
 
+//by member -> only E-books
 router.post(
-  "/admin/manual",
+  "/:bookId",
   auth,
-  isAdmin,
-  isActiveUser,
-  createBorrowByQueryController
-);
-
-router.post(
-  "/:userId/:bookId",
-  auth,
-  isAdmin,
   isActiveUser,
   createAnyBorrow,
-  createBorrowForUserController
+  createMyBorrowController
 );
+// -> add authMiddleware, createBorrowValidator (Joi)
 
 export default router;

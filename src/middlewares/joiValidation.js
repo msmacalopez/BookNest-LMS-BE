@@ -380,3 +380,21 @@ export const validateObjectIdParam = (paramName) => (req, res, next) => {
   }
   next();
 };
+
+export const createBorrowByQueryValidation = (req, res, next) => {
+  const schema = Joi.object({
+    memberQuery: Joi.string().trim().required(),
+    bookQuery: Joi.string().trim().required(),
+  });
+
+  const { error } = schema.validate(req.body);
+
+  if (error) {
+    return res.status(400).json({
+      status: "error",
+      message: error.details[0].message,
+    });
+  }
+
+  next();
+};
