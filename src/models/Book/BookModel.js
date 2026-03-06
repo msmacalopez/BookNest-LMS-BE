@@ -181,3 +181,11 @@ export const recalcAverageRatingForBookModel = async (bookId) => {
     reviewsCount: count,
   };
 };
+
+export const getBookByIsbnModel = (isbn) => {
+  const q = String(isbn || "").trim();
+
+  return BookSchema.findOne({
+    isbn: new RegExp(`^${q}$`, "i"),
+  });
+};

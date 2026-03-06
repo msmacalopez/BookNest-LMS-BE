@@ -6,7 +6,7 @@ import {
   renewTokenController,
 } from "../controllers/authController.js";
 //auth middlewares
-import { renewAuth } from "../middlewares/authMiddleware.js";
+import { isActiveUser, renewAuth } from "../middlewares/authMiddleware.js";
 //joi middlewares
 import { loginValidation } from "../middlewares/joiValidation.js";
 

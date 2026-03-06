@@ -4,7 +4,7 @@ const reviewSchema = new mongoose.Schema(
   {
     status: {
       type: String,
-      enum: ["active", "inactive"],
+      enum: ["active", "inactive", "blocked"],
       default: "inactive",
       index: 1,
     },

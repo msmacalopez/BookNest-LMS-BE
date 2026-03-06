@@ -13,6 +13,7 @@ import bookRoute from "./src/routes/bookRoute.js";
 import borrowsRoute from "./src/routes/borrowsRoute.js";
 import reviewRoute from "./src/routes/reviewRoute.js";
 import holdRoute from "./src/routes/holdRoute.js";
+import statsRoute from "./src/routes/statsRoute.js";
 
 //auto Return Jobs
 import { startAutoReturnEbooksJob } from "./src/jobs/autoReturnEbooks.js";
@@ -55,6 +56,9 @@ app.use("/api/v1/reviews", reviewRoute);
 
 //Hold Routes
 app.use("/api/v1/holds", holdRoute);
+
+//Stats Routes
+app.use("/api/v1/stats", statsRoute);
 
 // error validator
 app.use((error, req, res, next) => {

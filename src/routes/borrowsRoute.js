@@ -4,6 +4,7 @@ import {
   adminReturnBookController,
   createMyBorrowController,
   createBorrowForUserController,
+  createBorrowByQueryController,
   getAllBorrowsController,
   getMyBorrowsController,
 } from "../controllers/borrowsController.js";
@@ -54,5 +55,22 @@ router.patch(
   adminReturnBookController
 );
 // -> add authMiddleware, isAdminMiddleware
+
+router.post(
+  "/admin/manual",
+  auth,
+  isAdmin,
+  isActiveUser,
+  createBorrowByQueryController
+);
+
+router.post(
+  "/:userId/:bookId",
+  auth,
+  isAdmin,
+  isActiveUser,
+  createAnyBorrow,
+  createBorrowForUserController
+);
 
 export default router;

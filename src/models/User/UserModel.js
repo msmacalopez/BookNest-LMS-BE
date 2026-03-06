@@ -97,3 +97,14 @@ export const getUsersPagedModel = async (
 export const deleteUsersByIdsModel = (ids = []) => {
   return UserSchema.deleteMany({ _id: { $in: ids } });
 };
+
+export const getUserByEmailOrPhoneModel = (memberQuery) => {
+  const q = String(memberQuery || "").trim();
+
+  return UserSchema.findOne({
+    $or: [
+      { email: new RegExp(`^${q}$`, "i") },
+      { phone: new RegExp(`^${q}$`, "i") },
+    ],
+  });
+};

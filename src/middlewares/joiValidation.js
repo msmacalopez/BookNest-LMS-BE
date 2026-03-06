@@ -248,7 +248,7 @@ export const createAReview = (req, res, next) => {
 
 export const updateReviewToActive = (req, res, next) => {
   const schema = Joi.object({
-    status: Joi.string().valid("active", "inactive").required(),
+    status: Joi.string().valid("active", "inactive", "blocked").required(),
   });
 
   const { error } = schema.validate(req.body);

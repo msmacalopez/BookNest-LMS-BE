@@ -16,6 +16,19 @@ export const loginUserController = async (req, res, next) => {
 
     // user found includes the hashed-password
     const user = await getUserByEmailModel(email);
+    if (!user) {
+      return next({
+        status: 401,
+        message: "Unauthorized: no user recognised",
+      });
+    }
+
+    if (user.status !== "active") {
+      return next({
+        status: 403,
+        message: "Your account is not active. Please contact support or admin.",
+      });
+    }
 
     if (user) {
       //compare password

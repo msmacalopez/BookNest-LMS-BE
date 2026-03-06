@@ -242,10 +242,10 @@ export const updateReviewController = async (req, res, next) => {
 
     //2. Get status from body (otherwise new status=active)
     const { status = "active" } = req.body;
-    if (!["active", "inactive"].includes(status)) {
+    if (!["active", "inactive", "blocked"].includes(status)) {
       return res.status(400).json({
         status: "error",
-        message: "Invalid status. Allowed: 'active' or 'inactive'",
+        message: "Invalid status. Allowed: 'active', 'inactive' or 'blocked'",
       });
     }
 

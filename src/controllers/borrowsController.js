@@ -4,6 +4,7 @@ import { calcDueDate } from "../config/helper.js";
 // From Book Model
 import {
   getBookByIdModel,
+  getBookByIsbnModel,
   reserveBookCopyModel,
   releaseBookCopyModel,
   updateBookModel,
@@ -20,7 +21,10 @@ import {
   countActivePhysicalByUserModel,
 } from "../models/Borrow/BorrowHistoryModel.js";
 
-import { getUserByIdModel } from "../models/User/UserModel.js";
+import {
+  getUserByIdModel,
+  getUserByEmailOrPhoneModel,
+} from "../models/User/UserModel.js";
 
 // create borrow for himself
 export const createMyBorrowController = async (req, res, next) => {
@@ -383,6 +387,124 @@ export const adminReturnBookController = async (req, res, next) => {
       status: "success",
       message: "Book returned successfully",
       data: updatedBorrow,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createBorrowByQueryController = async (req, res, next) => {
+  try {
+    const adminId = req.userInfo?._id;
+
+    if (!adminId) {
+      return res.status(401).json({
+        status: "error",
+        message: "Unauthorized: Needs to log in as admin",
+      });
+    }
+
+    const adminUser = await getUserByIdModel(adminId);
+    if (!adminUser) {
+      return res.status(404).json({
+        status: "error",
+        message: "Admin not found",
+      });
+    }
+
+    const memberQuery = String(req.body.memberQuery || "").trim();
+    const bookQuery = String(req.body.bookQuery || "").trim();
+
+    if (!memberQuery || !bookQuery) {
+      return res.status(400).json({
+        status: "error",
+        message: "Member query and book query are required",
+      });
+    }
+
+    const user = await getUserByEmailOrPhoneModel(memberQuery);
+
+    if (!user) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found with that email or phone number",
+      });
+    }
+
+    if (user.status && user.status !== "active") {
+      return res.status(400).json({
+        status: "error",
+        message: "User is not active and cannot borrow books",
+      });
+    }
+
+    const book = await getBookByIsbnModel(bookQuery);
+
+    if (!book) {
+      return res.status(404).json({
+        status: "error",
+        message: "Book not found with that ISBN",
+      });
+    }
+
+    if (book.typeEdition === "Ebook") {
+      const activeEbooks = await countActiveEbooksByUserModel(user._id);
+
+      if (activeEbooks >= 5) {
+        return res.status(400).json({
+          status: "error",
+          message: "User already has 5 active Ebooks and cannot borrow more.",
+        });
+      }
+    } else {
+      const overduePhysical = await countOverduePhysicalByUserModel(user._id);
+
+      if (overduePhysical > 0) {
+        return res.status(400).json({
+          status: "error",
+          message: "User has overdue physical books and cannot borrow more.",
+        });
+      }
+
+      const activePhysical = await countActivePhysicalByUserModel(user._id);
+
+      if (activePhysical >= 5) {
+        return res.status(400).json({
+          status: "error",
+          message: "User already has 5 active physical borrows.",
+        });
+      }
+    }
+
+    const reservedBook = await reserveBookCopyModel(book._id);
+
+    if (!reservedBook) {
+      return res.status(400).json({
+        status: "error",
+        message: "No available copies for this volume",
+      });
+    }
+
+    const borrowRecord = await createBorrowHistoryModel({
+      userId: user._id,
+      createdById: adminId,
+      bookId: reservedBook._id,
+      bookTitle: reservedBook.title,
+      typeEdition: reservedBook.typeEdition,
+      coverImageUrl: reservedBook.coverImageUrl,
+      borrowDate: new Date(),
+      dueDate: calcDueDate(),
+      status: "borrowed",
+      bookAuthor: reservedBook.author,
+      bookIsbn: reservedBook.isbn,
+      memberEmail: user.email,
+      createdByEmail: adminUser.email,
+    });
+
+    return res.status(201).json({
+      status: "success",
+      message: "Book borrowed successfully for user",
+      data: borrowRecord,
     });
   } catch (error) {
     next(error);
