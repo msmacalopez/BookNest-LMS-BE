@@ -1,3 +1,7 @@
 node_modules
 .env
+.env.local
+.env.*
+dist
+build
 workflow.md
