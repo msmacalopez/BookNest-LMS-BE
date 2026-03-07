@@ -3,7 +3,7 @@ import config from "../config/config.js";
 
 //create access jwt token
 export const createAccessToken = (payload) => {
-  const token = JWT.sign(payload, config.jwt.secret, {
+  const token = jwt.sign(payload, config.jwt.secret, {
     expiresIn: config.jwt.expires,
   });
   return token;
@@ -12,7 +12,7 @@ export const createAccessToken = (payload) => {
 //verify access jwt token
 export const verifyAccessToken = (token) => {
   try {
-    const decoded = JWT.verify(token, config.jwt.secret);
+    const decoded = jwt.verify(token, config.jwt.secret);
     return decoded;
   } catch (error) {
     // throw new Error("Invalid or expired token");
@@ -24,7 +24,7 @@ export const verifyAccessToken = (token) => {
 
 //create renew jwt token
 export const createRenewToken = ({ email }) => {
-  const renewToken = JWT.sign({ email }, config.renewJwt.secret, {
+  const renewToken = jwt.sign({ email }, config.renewJwt.secret, {
     expiresIn: config.renewJwt.expires,
   });
   return renewToken;
@@ -33,7 +33,7 @@ export const createRenewToken = ({ email }) => {
 //verify renew jwt token
 export const verifyRenewToken = (renewToken) => {
   try {
-    const decoded = JWT.verify(renewToken, config.renewJwt.secret);
+    const decoded = jwt.verify(renewToken, config.renewJwt.secret);
     return decoded;
   } catch (error) {
     // throw new Error("Invalid or expired renew token");
