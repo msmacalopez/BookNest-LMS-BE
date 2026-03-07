@@ -18,6 +18,8 @@ import UserSchema from "../models/User/UserSchema.js";
 
 /////////////////////////// Member functions controller - MEMBER
 // create new user (member)
+
+//debugging
 export const createNewMemberController = async (req, res, next) => {
   try {
     const existingUser = await getUserByEmailModel(
@@ -43,7 +45,16 @@ export const createNewMemberController = async (req, res, next) => {
 
     const newUser = await createUserModel(userObj);
 
-    await sendVerificationEmail(newUser);
+    try {
+      await sendVerificationEmail(newUser);
+    } catch (emailError) {
+      console.error("[REGISTER] User created but email failed:", emailError);
+      return res.status(201).json({
+        status: "success",
+        message:
+          "Account created, but verification email could not be sent right now. Please try resend verification later.",
+      });
+    }
 
     return res.status(201).json({
       status: "success",
@@ -54,6 +65,44 @@ export const createNewMemberController = async (req, res, next) => {
     next(error);
   }
 };
+//nodemailer
+// export const createNewMemberController = async (req, res, next) => {
+//   try {
+//     const existingUser = await getUserByEmailModel(
+//       req.body.email.toLowerCase()
+//     );
+
+//     if (existingUser) {
+//       return res.status(400).json({
+//         status: "error",
+//         message: "This email is already registered",
+//       });
+//     }
+
+//     const userObj = {
+//       ...req.body,
+//       email: req.body.email.toLowerCase(),
+//       role: "member",
+//       status: "pending",
+//       isEmailVerified: false,
+//     };
+
+//     userObj.password = hashPassword(req.body.password);
+
+//     const newUser = await createUserModel(userObj);
+
+//     await sendVerificationEmail(newUser);
+
+//     return res.status(201).json({
+//       status: "success",
+//       message:
+//         "Registration successful. Please check your email to verify your account.",
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+//original version
 // export const createNewMemberController = async (req, res, next) => {
 //   try {
 //     // create member
