@@ -199,7 +199,13 @@ export const getDashboardBorrowStatsController = async (req, res, next) => {
     const memberStatus = String(req.query.memberStatus || "active"); // active|inactive|suspended|deactivated
     const adminStatus = String(req.query.adminStatus || "active");
 
-    const validStatuses = ["active", "inactive", "suspended", "deactivated"];
+    const validStatuses = [
+      "active",
+      "inactive",
+      "suspended",
+      "deactivated",
+      "pending",
+    ];
     const safeMemberStatus = validStatuses.includes(memberStatus)
       ? memberStatus
       : "active";

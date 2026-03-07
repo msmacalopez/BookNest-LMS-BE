@@ -26,7 +26,7 @@ export const auth = async (req, res, next) => {
 
     const decoded = verifyAccessToken(token);
 
-    if (!decoded?.email) {
+    if (!decoded || !decoded.email) {
       return next({
         message: "Invalid token payload",
         status: 401,
@@ -137,7 +137,7 @@ export const renewAuth = async (req, res, next) => {
 
     const decoded = verifyRenewToken(token);
 
-    if (!decoded?.email) {
+    if (!decoded || !decoded.email) {
       return next({
         message: "Invalid refresh token payload",
         status: 401,

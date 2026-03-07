@@ -20,7 +20,7 @@ export const loginUserController = async (req, res, next) => {
       .trim();
 
     // user found includes the hashed-password
-    const user = await getUserByEmailModel(email);
+    const user = await getUserByEmailModel(normalizedEmail);
     if (!user) {
       return next({
         status: 401,

@@ -70,11 +70,19 @@ export const newMemberValidation = (req, res, next) => {
 
 //Member cannot change role, status can only be change to deactivated
 export const updateMyMemberValidation = (req, res, next) => {
+  if (req.user?.status !== "active") {
+    return res.status(403).json({
+      status: "error",
+      message: "Only active members can update their details.",
+    });
+  }
+
   // Remove role if user tries to send it
   if ("role" in req.body) {
     delete req.body.role;
   }
-  if ("status" in req.body && req.body.status !== "deactivated") {
+  // Members cannot change status
+  if ("status" in req.body) {
     delete req.body.status;
   }
   const schema = Joi.object({
@@ -92,7 +100,13 @@ export const updateMyMemberValidation = (req, res, next) => {
 //only updates on status
 export const updateMemberByAdminValidation = (req, res, next) => {
   const schema = Joi.object({
-    status: STR.valid("active", "inactive", "suspended", "deactivated"),
+    status: STR.valid(
+      "active",
+      "inactive",
+      "suspended",
+      "deactivated",
+      "pending"
+    ),
   }).unknown(false); // <- reject any other fields
 
   return joiValidator({ req, res, next, schema });
@@ -124,7 +138,13 @@ export const updateLibrarianValidation = (req, res, next) => {
     email: EMAIL,
     phone: PHONE,
     role: STR.valid("superadmin", "admin", "member"),
-    status: STR.valid("active", "inactive", "suspended", "deactivated"),
+    status: STR.valid(
+      "active",
+      "inactive",
+      "suspended",
+      "deactivated",
+      "pending"
+    ),
   });
   return joiValidator({ req, res, next, schema });
 };
@@ -314,7 +334,7 @@ export const createUserBySuperAdminValidation = (req, res, next) => {
   const schema = Joi.object({
     role: Joi.string().valid("admin", "member").required(),
     status: Joi.string()
-      .valid("active", "inactive", "suspended", "deactivated")
+      .valid("active", "inactive", "suspended", "deactivated", "pending")
       .required(),
 
     fName: Joi.string().required(),
@@ -339,7 +359,8 @@ export const updateUserBySuperAdminValidation = (req, res, next) => {
       "active",
       "inactive",
       "suspended",
-      "deactivated"
+      "deactivated",
+      "pending"
     ),
     fName: STR,
     lName: STR,

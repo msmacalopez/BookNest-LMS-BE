@@ -12,13 +12,9 @@ export const createAccessToken = (payload) => {
 //verify access jwt token
 export const verifyAccessToken = (token) => {
   try {
-    const decoded = jwt.verify(token, config.jwt.secret);
-    return decoded;
+    return jwt.verify(token, config.jwt.secret);
   } catch (error) {
-    // throw new Error("Invalid or expired token");
-    return error.message === "jwt expired"
-      ? "jwt expired" + error.message
-      : "Invalid Token";
+    return null;
   }
 };
 
@@ -33,13 +29,9 @@ export const createRenewToken = ({ email }) => {
 //verify renew jwt token
 export const verifyRenewToken = (renewToken) => {
   try {
-    const decoded = jwt.verify(renewToken, config.renewJwt.secret);
-    return decoded;
+    return jwt.verify(renewToken, config.renewJwt.secret);
   } catch (error) {
-    // throw new Error("Invalid or expired renew token");
-    return error.message === "jwt expired"
-      ? "jwt Renew expired"
-      : "Invalid Renew Token";
+    return null;
   }
 };
 
