@@ -1,6 +1,8 @@
 import config from "../config/config.js";
-import { transporter } from "../config/mailer.js";
 import { createEmailVerifyToken } from "./jwt.js";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export const sendVerificationEmail = async (user) => {
   try {
@@ -12,13 +14,11 @@ export const sendVerificationEmail = async (user) => {
     const verifyUrl = `${config.clientUrl}/verify-email?token=${token}`;
 
     console.log("[EMAIL] Sending verification email to:", user.email);
-    console.log("[EMAIL] Using EMAIL_USER:", config.mail.user);
-    console.log("[EMAIL] Using CLIENT_URL:", config.clientUrl);
     console.log("[EMAIL] Verify URL:", verifyUrl);
 
-    const info = await transporter.sendMail({
-      from: config.mail.from,
-      to: user.email,
+    const { data, error } = await resend.emails.send({
+      from: process.env.EMAIL_FROM || "BookNest <onboarding@resend.dev>",
+      to: [user.email],
       subject: "Verify your BookNest account",
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.6;">
@@ -39,8 +39,13 @@ export const sendVerificationEmail = async (user) => {
       `,
     });
 
-    console.log("[EMAIL] Sent successfully:", info.messageId);
-    return info;
+    if (error) {
+      console.error("[EMAIL] Resend error:", error);
+      throw new Error(error.message || "Failed to send email");
+    }
+
+    console.log("[EMAIL] Sent successfully:", data);
+    return data;
   } catch (error) {
     console.error("[EMAIL] Failed to send verification email");
     console.error("[EMAIL] Error message:", error?.message);
