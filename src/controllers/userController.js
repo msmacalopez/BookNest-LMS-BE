@@ -18,8 +18,6 @@ import UserSchema from "../models/User/UserSchema.js";
 
 /////////////////////////// Member functions controller - MEMBER
 // create new user (member)
-
-//debugging
 export const createNewMemberController = async (req, res, next) => {
   try {
     const existingUser = await getUserByEmailModel(
@@ -37,92 +35,28 @@ export const createNewMemberController = async (req, res, next) => {
       ...req.body,
       email: req.body.email.toLowerCase(),
       role: "member",
-      status: "pending",
-      isEmailVerified: false,
+
+      //TODO :production "pending" and false
+      //activate immediately -> resend not required
+      status: "active",
+      isEmailVerified: true,
     };
 
     userObj.password = hashPassword(req.body.password);
 
     const newUser = await createUserModel(userObj);
 
-    try {
-      await sendVerificationEmail(newUser);
-    } catch (emailError) {
-      console.error("[REGISTER] User created but email failed:", emailError);
-      return res.status(201).json({
-        status: "success",
-        message:
-          "Account created, but verification email could not be sent right now. Please try resend verification later.",
-      });
-    }
+    //email verification- not here
+    // await sendVerificationEmail(newUser);
 
     return res.status(201).json({
       status: "success",
-      message:
-        "Registration successful. Please check your email to verify your account.",
+      message: "Registration successful. You can now log in.",
     });
   } catch (error) {
     next(error);
   }
 };
-//nodemailer
-// export const createNewMemberController = async (req, res, next) => {
-//   try {
-//     const existingUser = await getUserByEmailModel(
-//       req.body.email.toLowerCase()
-//     );
-
-//     if (existingUser) {
-//       return res.status(400).json({
-//         status: "error",
-//         message: "This email is already registered",
-//       });
-//     }
-
-//     const userObj = {
-//       ...req.body,
-//       email: req.body.email.toLowerCase(),
-//       role: "member",
-//       status: "pending",
-//       isEmailVerified: false,
-//     };
-
-//     userObj.password = hashPassword(req.body.password);
-
-//     const newUser = await createUserModel(userObj);
-
-//     await sendVerificationEmail(newUser);
-
-//     return res.status(201).json({
-//       status: "success",
-//       message:
-//         "Registration successful. Please check your email to verify your account.",
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
-//original version
-// export const createNewMemberController = async (req, res, next) => {
-//   try {
-//     // create member
-//     const userObj = { ...req.body, role: "member" };
-
-//     // hash password before saving to DB
-//     userObj.password = hashPassword(req.body.password);
-
-//     // save to DB
-//     const newUser = await createUserModel(userObj);
-
-//     res.status(201).json({
-//       status: "success",
-//       message: "User created successfully",
-//       // data: newUser,
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
 
 //get details of user by id (from token)
 export const getMyDetailsController = async (req, res, next) => {
