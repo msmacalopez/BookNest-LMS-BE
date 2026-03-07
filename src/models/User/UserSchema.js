@@ -9,8 +9,8 @@ const userSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["active", "inactive", "suspended", "deactivated"],
-      default: "active",
+      enum: ["pending", "active", "inactive", "suspended", "deactivated"],
+      default: "pending",
     },
     fName: {
       type: String,

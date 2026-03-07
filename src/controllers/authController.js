@@ -14,12 +14,24 @@ export const loginUserController = async (req, res, next) => {
     //get email from request body
     const { email, password } = req.body;
 
+    //normalize email before searching
+    const normalizedEmail = String(email || "")
+      .toLowerCase()
+      .trim();
+
     // user found includes the hashed-password
     const user = await getUserByEmailModel(email);
     if (!user) {
       return next({
         status: 401,
         message: "Unauthorized: no user recognised",
+      });
+    }
+
+    if (user.status === "pending") {
+      return next({
+        status: 403,
+        message: "Please verify your email before logging in.",
       });
     }
 
@@ -30,38 +42,44 @@ export const loginUserController = async (req, res, next) => {
       });
     }
 
-    if (user) {
-      //compare password
-      if (comparePassword(password, user.password)) {
-        const payload = { email }; //or user.email
+    //if user exist -> compare password
+    const isPasswordCorrect = comparePassword(password, user.password);
 
-        //generate Access Token
-        const accessToken = createAccessToken(payload);
-
-        // generate Renew Token
-        const renewToken = createRenewToken(payload);
-
-        //send response to front end
-        return res.json({
-          status: "success",
-          message: "User Authenticated",
-          tokens: {
-            accessToken,
-            renewToken,
-          },
-        });
-      } else {
-        const error = {
-          message: "Invalid Credentials",
-        };
-        next(error);
-      }
-    } else {
-      const error = {
-        message: "User not found",
-      };
-      next(error);
+    if (!isPasswordCorrect) {
+      return next({
+        status: 401,
+        message: "Invalid Credentials",
+      });
     }
+
+    //normalized email in payload
+    const payload = { email: normalizedEmail };
+
+    //generate Access Token
+    const accessToken = createAccessToken(payload);
+
+    // generate Renew Token
+    const renewToken = createRenewToken(payload);
+
+    //response to front end
+    return res.json({
+      status: "success",
+      message: "User Authenticated",
+      tokens: {
+        accessToken,
+        renewToken,
+      },
+      user: {
+        _id: user._id,
+        role: user.role,
+        status: user.status,
+        fName: user.fName,
+        lName: user.lName,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+      },
+    });
   } catch (error) {
     next(error);
   }

@@ -1,3 +1,4 @@
+//authMiddleware.js
 import { getUserByEmailModel } from "../models/User/UserModel.js";
 import { verifyAccessToken, verifyRenewToken } from "../utils/jwt.js";
 
@@ -73,47 +74,96 @@ export const isActiveUser = (req, res, next) => {
   next();
 };
 
+// export const renewAuth = async (req, res, next) => {
+//   try {
+//     //     1. receive jwt via authorization header
+//     const { authorization } = req.headers;
+
+//     //in case starts with Bearer
+//     const token = authorization.startsWith("Bearer ")
+//       ? authorization.split(" ")[1]
+//       : authorization;
+
+//     // 2. verify if jwt is valid(no expired, secretkey) by decoding jwt
+//     const decoded = verifyRenewToken(token);
+
+//     if (decoded?.email) {
+//       // 3. If valid decoded-token, get token object
+//       const tokenObj = authorization;
+
+//       if (true) {
+//         // 4. Extract email from the decoded jwt obj
+//         // 5. Get user by email
+//         const user = await getUserByEmailModel(decoded.email);
+
+//         if (user?._id) {
+//           // 6. If user exist, they are now authorized
+
+//           //not even keep the hashed password in the req object
+//           user.password = "";
+//           req.userInfo = user;
+
+//           return next();
+//         }
+//       }
+//     }
+
+//     // if token is expired or not valid
+//     const error = {
+//       message: decoded,
+//       status: 401, // not authenticated
+//     };
+
+//     next(error);
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
 export const renewAuth = async (req, res, next) => {
   try {
-    //     1. receive jwt via authorization header
     const { authorization } = req.headers;
 
-    //in case starts with Bearer
+    if (!authorization) {
+      return next({
+        message: "No authorization header provided",
+        status: 401,
+      });
+    }
+
     const token = authorization.startsWith("Bearer ")
       ? authorization.split(" ")[1]
       : authorization;
 
-    // 2. verify if jwt is valid(no expired, secretkey) by decoding jwt
     const decoded = verifyRenewToken(token);
 
-    if (decoded?.email) {
-      // 3. If valid decoded-token, get token object
-      const tokenObj = authorization;
-
-      if (true) {
-        // 4. Extract email from the decoded jwt obj
-        // 5. Get user by email
-        const user = await getUserByEmailModel(decoded.email);
-
-        if (user?._id) {
-          // 6. If user exist, they are now authorized
-
-          //not even keep the hashed password in the req object
-          user.password = "";
-          req.userInfo = user;
-
-          return next();
-        }
-      }
+    if (!decoded?.email) {
+      return next({
+        message: "Invalid refresh token payload",
+        status: 401,
+      });
     }
 
-    // if token is expired or not valid
-    const error = {
-      message: decoded,
-      status: 401, // not authenticated
-    };
+    const user = await getUserByEmailModel(decoded.email);
 
-    next(error);
+    if (!user) {
+      return next({
+        message: "User not found for this token",
+        status: 401,
+      });
+    }
+
+    if (user.status !== "active") {
+      return next({
+        message: "Your account is not active",
+        status: 403,
+      });
+    }
+
+    user.password = "";
+    req.userInfo = user;
+
+    return next();
   } catch (error) {
     next(error);
   }

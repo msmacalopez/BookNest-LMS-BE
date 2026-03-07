@@ -1,4 +1,6 @@
 import { comparePassword, hashPassword } from "../utils/bcrypt.js";
+import { sendVerificationEmail } from "../utils/sendVerificationEmail.js";
+import { verifyEmailVerifyToken } from "../utils/jwt.js";
 import {
   getAllUsersModel,
   getUserByIdModel,
@@ -10,6 +12,7 @@ import {
   getMembersPagedModel,
   getUsersPagedModel,
   deleteUsersByIdsModel,
+  getUserByEmailModel,
 } from "../models/User/UserModel.js";
 import UserSchema from "../models/User/UserSchema.js";
 
@@ -17,24 +20,60 @@ import UserSchema from "../models/User/UserSchema.js";
 // create new user (member)
 export const createNewMemberController = async (req, res, next) => {
   try {
-    // create member
-    const userObj = { ...req.body, role: "member" };
+    const existingUser = await getUserByEmailModel(
+      req.body.email.toLowerCase()
+    );
 
-    // hash password before saving to DB
+    if (existingUser) {
+      return res.status(400).json({
+        status: "error",
+        message: "This email is already registered",
+      });
+    }
+
+    const userObj = {
+      ...req.body,
+      email: req.body.email.toLowerCase(),
+      role: "member",
+      status: "pending",
+      isEmailVerified: false,
+    };
+
     userObj.password = hashPassword(req.body.password);
 
-    // save to DB
     const newUser = await createUserModel(userObj);
 
-    res.status(201).json({
+    await sendVerificationEmail(newUser);
+
+    return res.status(201).json({
       status: "success",
-      message: "User created successfully",
-      // data: newUser,
+      message:
+        "Registration successful. Please check your email to verify your account.",
     });
   } catch (error) {
     next(error);
   }
 };
+// export const createNewMemberController = async (req, res, next) => {
+//   try {
+//     // create member
+//     const userObj = { ...req.body, role: "member" };
+
+//     // hash password before saving to DB
+//     userObj.password = hashPassword(req.body.password);
+
+//     // save to DB
+//     const newUser = await createUserModel(userObj);
+
+//     res.status(201).json({
+//       status: "success",
+//       message: "User created successfully",
+//       // data: newUser,
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
 
 //get details of user by id (from token)
 export const getMyDetailsController = async (req, res, next) => {
@@ -671,5 +710,96 @@ export const superadminBulkDeleteUsersController = async (req, res, next) => {
     });
   } catch (e) {
     next(e);
+  }
+};
+
+//nodemailer
+export const verifyMyEmailController = async (req, res, next) => {
+  try {
+    const { token } = req.query;
+
+    if (!token) {
+      return res.status(400).json({
+        status: "error",
+        message: "Verification token is missing",
+      });
+    }
+
+    const decoded = verifyEmailVerifyToken(token);
+
+    if (decoded?.type !== "email-verification" || !decoded?.email) {
+      return res.status(400).json({
+        status: "error",
+        message: "Invalid verification token",
+      });
+    }
+
+    const user = await getUserByEmailModel(decoded.email.toLowerCase());
+
+    if (!user) {
+      return res.status(404).json({
+        status: "error",
+        message: "User not found",
+      });
+    }
+
+    if (user.isEmailVerified && user.status === "active") {
+      return res.status(200).json({
+        status: "success",
+        message: "Email already verified. Your account is already active.",
+      });
+    }
+
+    user.status = "active";
+    user.isEmailVerified = true;
+    await user.save();
+
+    return res.status(200).json({
+      status: "success",
+      message: "Email verified successfully. Your account is now active.",
+    });
+  } catch (error) {
+    return res.status(400).json({
+      status: "error",
+      message: "Invalid or expired verification link",
+    });
+  }
+};
+
+export const resendVerificationEmailController = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    const user = await getUserByEmailModel(String(email || "").toLowerCase());
+
+    if (!user) {
+      return res.status(200).json({
+        status: "success",
+        message: "If that email exists, a verification email has been sent.",
+      });
+    }
+
+    if (user.role !== "member") {
+      return res.status(403).json({
+        status: "error",
+        message: "Verification resend is only available for member accounts.",
+      });
+    }
+
+    if (user.isEmailVerified && user.status === "active") {
+      return res.status(200).json({
+        status: "success",
+        message: "This account is already verified.",
+      });
+    }
+
+    await sendVerificationEmail(user);
+
+    return res.status(200).json({
+      status: "success",
+      message: "Verification email sent successfully.",
+    });
+  } catch (error) {
+    next(error);
   }
 };

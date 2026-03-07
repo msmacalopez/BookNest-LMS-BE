@@ -1,4 +1,4 @@
-import JWT from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import config from "../config/config.js";
 
 //create access jwt token
@@ -41,4 +41,15 @@ export const verifyRenewToken = (renewToken) => {
       ? "jwt Renew expired"
       : "Invalid Renew Token";
   }
+};
+
+//nodemailer
+export const createEmailVerifyToken = (payload) => {
+  return jwt.sign(payload, config.emailVerifyJwt.secret, {
+    expiresIn: config.emailVerifyJwt.expires,
+  });
+};
+
+export const verifyEmailVerifyToken = (token) => {
+  return jwt.verify(token, config.emailVerifyJwt.secret);
 };

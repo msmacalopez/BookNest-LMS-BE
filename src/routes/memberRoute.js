@@ -6,7 +6,10 @@ import {
   getMyDetailsController,
   updateMyDetailsController,
   changeMyPasswordController,
+  verifyMyEmailController,
+  resendVerificationEmailController,
 } from "../controllers/userController.js";
+
 //auth middlewares
 import { auth, isActiveUser } from "../middlewares/authMiddleware.js";
 //joi middlewares
@@ -21,6 +24,11 @@ const router = express.Router();
 // api/v1/member/register
 router.post("/register", newMemberValidation, createNewMemberController);
 //-> add newUserValidator (Joi)
+
+//nodemailer
+router.get("/verify-email", verifyMyEmailController);
+//nodemailer
+router.post("/resend-verification", resendVerificationEmailController);
 
 // api/v1/member/user
 router.get("/mydetails", auth, getMyDetailsController);
