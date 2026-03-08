@@ -14,7 +14,7 @@ export const verifyAccessToken = (token) => {
   try {
     return jwt.verify(token, config.jwt.secret);
   } catch (error) {
-    return null;
+    return error.message;
   }
 };
 
@@ -31,7 +31,7 @@ export const verifyRenewToken = (renewToken) => {
   try {
     return jwt.verify(renewToken, config.renewJwt.secret);
   } catch (error) {
-    return null;
+    return error.message;
   }
 };
 

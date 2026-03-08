@@ -13,7 +13,7 @@ export const startAutoReturnEbooksJob = () => {
   //TODO
   //PRODUCTION: "0 3 * * *"
   //TESTING: "* * * * *"
-  cron.schedule("* * * * *", async () => {
+  cron.schedule("0 3 * * *", async () => {
     try {
       const expired = await getExpiredEbookBorrowsModel();
 

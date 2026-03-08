@@ -9,12 +9,17 @@ import {
   getTypeEditionDistributionController,
 } from "../controllers/statsController.js";
 //Members dashboard
-import { getMemberDashboardStatsController } from "../controllers/memberStatsController.js";
 import {
+  getMemberDashboardStatsController,
   getMemberBorrowingTrendsController,
   getMemberGenreDistributionController,
-} from "../controllers/memberChartsController.js";
-import { getMemberRecommendationsController } from "../controllers/memberRecommendationsController.js";
+  getMemberRecommendationsController,
+} from "../controllers/memberStatsController.js";
+// import {
+//   getMemberBorrowingTrendsController,
+//   getMemberGenreDistributionController,
+// } from "../controllers/memberChartsController.js";
+// import { getMemberRecommendationsController } from "../controllers/memberRecommendationsController.js";
 
 const router = express.Router();
 
