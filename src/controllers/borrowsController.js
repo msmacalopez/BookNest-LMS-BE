@@ -116,7 +116,8 @@ export const createMyBorrowController = async (req, res, next) => {
       typeEdition: reservedBook.typeEdition,
       coverImageUrl: reservedBook.coverImageUrl,
       borrowDate: new Date(),
-      dueDate: calcDueDate(0.001),
+      // dueDate: calcDueDate(0.001),
+      dueDate: calcDueDate(),
       status: "borrowed",
       createdById: userId,
 
